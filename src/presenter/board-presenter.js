@@ -25,5 +25,5 @@ export default class BoardPresenter {
     }
 
     render(new ShowMoreButtonView(), this.listComponent.getElement());
-  }
+  };
 }

@@ -1,7 +1,7 @@
 import { createElement } from '../render.js';
 
 const createMenuTemplate = () => (
-    `<nav class="main-navigation">
+  `<nav class="main-navigation">
         <a href="#all" class="main-navigation__item main-navigation__item--active">All movies</a>
         <a href="#watchlist" class="main-navigation__item">Watchlist <span class="main-navigation__item-count">13</span></a>
         <a href="#history" class="main-navigation__item">History <span class="main-navigation__item-count">4</span></a>
@@ -10,19 +10,19 @@ const createMenuTemplate = () => (
 );
 
 export default class MenuView {
-    getTemplate() {
-        return createMenuTemplate();
+  getTemplate() {
+    return createMenuTemplate();
+  }
+
+  getElement() {
+    if (!this.element) {
+      this.element = createElement(this.getTemplate());
     }
 
-    getElement() {
-        if (!this.element) {
-            this.element = createElement(this.getTemplate());
-        }
+    return this.element;
+  }
 
-        return this.element;
-    }
-
-    removeElement() {
-        this.element = null;
-    }
+  removeElement() {
+    this.element = null;
+  }
 }
