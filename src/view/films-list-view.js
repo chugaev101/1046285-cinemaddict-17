@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import { createElement } from '../render.js';
 
 const createListTemplate = () => '<section class="films-list"></section>';
 

@@ -1,7 +1,7 @@
-import {createElement} from '../render.js';
+import { createElement } from '../render.js';
 
 const createCardTemplate = () => (
-    `<article class="film-card">
+  `<article class="film-card">
       <a class="film-card__link">
         <h3 class="film-card__title">The Dance of Life</h3>
         <p class="film-card__rating">8.3</p>
@@ -23,19 +23,19 @@ const createCardTemplate = () => (
 );
 
 export default class FilmCardView {
-    getTemplate() {
-        return createCardTemplate();
+  getTemplate() {
+    return createCardTemplate();
+  }
+
+  getElement() {
+    if (!this.element) {
+      this.element = createElement(this.getTemplate());
     }
 
-    getElement() {
-        if (!this.element) {
-            this.element = createElement(this.getTemplate());
-        }
+    return this.element;
+  }
 
-        return this.element;
-    }
-
-    removeElement() {
-        this.element = null;
-    }
+  removeElement() {
+    this.element = null;
+  }
 }
