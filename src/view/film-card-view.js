@@ -29,7 +29,7 @@ const createCardTemplate = (movie) => {
           <button class="film-card__controls-item film-card__controls-item--favorite ${toggleFilmControls(favorite)}" type="button">Mark as favorite</button>
         </div>
       </article>`
-  )
+  );
 };
 
 export default class FilmCardView {
