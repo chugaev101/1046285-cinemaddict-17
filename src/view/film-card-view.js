@@ -2,10 +2,10 @@ import { createElement } from '../render.js';
 import { humanizeShortDate } from '../utils.js';
 
 const createCardTemplate = (movie) => {
-  const { id, comments, film_info, user_details } = movie;
-  const { title, total_rating, poster, release, runtime, genre, description } = film_info;
+  const { id, comments, film_info: filmInfo, user_details: userDetails } = movie;
+  const { title, total_rating: totalRating, poster, release, runtime, genre, description } = filmInfo;
   const { date } = release;
-  const { watchlist, already_watched, favorite } = user_details;
+  const { watchlist, already_watched: alreadyWatched, favorite } = userDetails;
 
   const toggleFilmControls = (control) => control === true ? 'film-card__controls-item--active' : '';
 
@@ -13,7 +13,7 @@ const createCardTemplate = (movie) => {
     `<article class="film-card" data-id="${id}">
         <a class="film-card__link">
           <h3 class="film-card__title">${title}</h3>
-          <p class="film-card__rating">${total_rating}</p>
+          <p class="film-card__rating">${totalRating}</p>
           <p class="film-card__info">
             <span class="film-card__year">${humanizeShortDate(date)}</span>
             <span class="film-card__duration">${runtime}</span>
@@ -25,7 +25,7 @@ const createCardTemplate = (movie) => {
         </a>
         <div class="film-card__controls">
           <button class="film-card__controls-item film-card__controls-item--add-to-watchlist ${toggleFilmControls(watchlist)}" type="button">Add to watchlist</button>
-          <button class="film-card__controls-item film-card__controls-item--mark-as-watched ${toggleFilmControls(already_watched)}" type="button">Mark as watched</button>
+          <button class="film-card__controls-item film-card__controls-item--mark-as-watched ${toggleFilmControls(alreadyWatched)}" type="button">Mark as watched</button>
           <button class="film-card__controls-item film-card__controls-item--favorite ${toggleFilmControls(favorite)}" type="button">Mark as favorite</button>
         </div>
       </article>`

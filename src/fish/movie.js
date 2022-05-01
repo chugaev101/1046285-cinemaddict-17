@@ -20,15 +20,15 @@ const getCommentsIds = () => {
   }
 
   return ids;
-}
+};
 
 const getTitle = () => {
   const values = Object.keys(getMovies());
 
   return values[getRandomInteger(0, values.length - 1)];
-}
+};
 
-const getRandomBoolean = () => getRandomInteger() === 1 ? true : false;
+const getRandomBoolean = () => getRandomInteger() === 1;
 
 export const generateMovie = () => {
   const title = getTitle();
@@ -59,5 +59,5 @@ export const generateMovie = () => {
       'watching_date': '2019-04-12T16:12:32.554Z',
       'favorite': getRandomBoolean(),
     }
-  })
+  });
 };

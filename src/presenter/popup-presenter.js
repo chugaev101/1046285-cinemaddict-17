@@ -34,5 +34,5 @@ export default class PopupPresenter {
 
     Array.from(this.popupComments).forEach((comment) => createRenderList(commentsWrap, comment));
     render(this.newCommentComponent, commentsWrap);
-  }
+  };
 }

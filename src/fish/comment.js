@@ -2,14 +2,14 @@ import { getRandomInteger, humanizeFullDate } from '../utils.js';
 import dayjs from 'dayjs';
 
 const getNames = () => ['Jacob', 'Emily', 'Michael', 'Emma', 'Joshua'];
-const getEmotion = () => ["smile", "sleeping", "puke", "angry"];
+const getEmotion = () => ['smile', 'sleeping', 'puke', 'angry'];
 
 const generateDate = () => {
   const maxDaysGap = 7;
   const daysGap = getRandomInteger(-maxDaysGap, 0);
 
   return dayjs().add(daysGap, 'day').toDate();
-}
+};
 
 export const generateComment = () => {
   let date = generateDate();
@@ -35,5 +35,5 @@ export const generateComment = () => {
     'comment': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget.',
     'date': date,
     'emotion': getEmotion()[getRandomInteger(0, getEmotion().length - 1)],
-  }
+  };
 };

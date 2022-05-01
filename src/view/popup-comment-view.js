@@ -17,7 +17,7 @@ const createCommentTemplate = (commentsItem) => {
         </p>
       </div>
     </li>`
-  )
+  );
 };
 
 export default class PopupCommentView {
