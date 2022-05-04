@@ -11,7 +11,7 @@ const createMenuTemplate = () => (
 
 export default class MenuView {
   #element = null;
-  
+
   get template() {
     return createMenuTemplate();
   }

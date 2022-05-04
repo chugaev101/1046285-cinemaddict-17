@@ -36,15 +36,15 @@ export default class BoardPresenter {
     this.#boardContainer = container;
     this.#movieModel = movieModel;
     this.#commentsModel = commentsModel;
-  };
+  }
 
   get boardMovies() {
     return [...this.#movieModel.movies];
-  };
+  }
 
   get comments() {
     return [...this.#commentsModel.comments];
-  };
+  }
 
   init = () => {
     render(this.#boardComponent, this.#boardContainer);
@@ -88,7 +88,7 @@ export default class BoardPresenter {
 
     let commentsCount = 0;
 
-    for (let comment of this.comments) {
+    for (const comment of this.comments) {
       if (commentsIds.includes(comment.id)) {
         this.#renderComment(comment);
         commentsCount++;
@@ -103,7 +103,7 @@ export default class BoardPresenter {
     this.#filmInfoComponent.element.querySelector('.film-details__close-btn').addEventListener('click', this.#hidePopup);
 
     document.addEventListener('keydown', this.#escDownHandler);
-  }
+  };
 
   #hidePopup = () => {
     this.#popupContainerComponent.element.remove();
@@ -119,7 +119,7 @@ export default class BoardPresenter {
     this.#filmInfoComponent.element.querySelector('.film-details__close-btn').removeEventListener('click', this.#hidePopup);
 
     document.removeEventListener('keydown', this.#escDownHandler);
-  }
+  };
 
   #renderComment = (comment) => {
     const commentComponent = new PopupCommentView(comment);
@@ -132,5 +132,5 @@ export default class BoardPresenter {
       evt.preventDefault();
       this.#hidePopup();
     }
-  }
+  };
 }
