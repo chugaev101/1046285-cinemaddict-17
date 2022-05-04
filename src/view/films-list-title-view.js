@@ -1,21 +1,39 @@
 import { createElement } from '../render.js';
 
-const createTitleTemplate = () => '<h2 class="films-list__title">There are no movies in our database</h2>';
+const createTitleTemplate = (movies) => {
+  let title = '';
+  let hiddenClass;
 
-export default class FilmsBoardView {
-  getTemplate() {
-    return createTitleTemplate();
+  if (!movies.length) {
+    title = 'There are no movies in our database';
+  } else {
+    hiddenClass = 'visually-hidden';
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
+  return `<h2 class="films-list__title ${hiddenClass}">${title}</h2>`;
+};
+
+export default class FilmsBoardView {
+  #element = null;
+  #movies = null;
+
+  constructor(movies) {
+    this.#movies = movies;
+  }
+
+  get template() {
+    return createTitleTemplate(this.#movies);
+  }
+
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
   }
 
   removeElement() {
-    this.element = null;
+    this.#element = null;
   }
 }

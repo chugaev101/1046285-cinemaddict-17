@@ -1,8 +1,10 @@
-import { generateComment } from '../fish/comment.js';
+import { generateComment } from '../mock/comment.js';
 import { getRandomInteger } from '../utils.js';
 
 export default class CommentsModel {
-  comments = Array.from({ length: getRandomInteger(1, 6) }, generateComment);
+  #comments = Array.from({ length: getRandomInteger(1, 16) }, generateComment);
 
-  getComments = () => this.comments;
+  get comments() {
+    return this.#comments;
+  };
 }

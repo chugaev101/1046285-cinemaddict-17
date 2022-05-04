@@ -6,9 +6,13 @@ const getEmotion = () => ['smile', 'sleeping', 'puke', 'angry'];
 
 const generateDate = () => {
   const maxDaysGap = 7;
+  const maxHoursGap = 23;
+  const maxMinutesGap = 59;
   const daysGap = getRandomInteger(-maxDaysGap, 0);
+  const hoursGap = getRandomInteger(0, maxHoursGap);
+  const minutesGap = getRandomInteger(0, maxMinutesGap);
 
-  return dayjs().add(daysGap, 'day').toDate();
+  return dayjs().add(daysGap, 'day').add(hoursGap, 'hour').add(minutesGap, 'minute').toDate();
 };
 
 export const generateComment = () => {
