@@ -1,25 +1,28 @@
 import { createElement } from '../render.js';
 
-const createTitleTemplate = (comments) => `<h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${comments.length}</span></h3>`;
+const createTitleTemplate = (commentsCount) => `<h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${commentsCount}</span></h3>`;
 
 export default class PopupCommentsTitleView {
+  #comments = null;
+  #element = null;
+
   constructor(comments) {
-    this.comments = comments;
+    this.#comments = comments;
   }
 
-  getTemplate() {
-    return createTitleTemplate(this.comments);
+  get template() {
+    return createTitleTemplate(this.#comments);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
   }
 
   removeElement() {
-    this.element = null;
+    this.#element = null;
   }
 }

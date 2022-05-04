@@ -1,7 +1,10 @@
-import { generateMovie } from '../fish/movie.js';
+import { generateMovie } from '../mock/movie.js';
+import { getRandomInteger } from '../utils.js';
 
 export default class MovieModel {
-  movies = Array.from({ length: 5 }, generateMovie);
+  #movies = Array.from({ length: getRandomInteger(5, 22) }, generateMovie);
 
-  getMovies = () => this.movies;
+  get movies () {
+    return this.#movies;
+  }
 }
