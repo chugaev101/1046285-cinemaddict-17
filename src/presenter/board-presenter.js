@@ -14,7 +14,7 @@ import PopupCommentsTitleView from '../view/popup-comments-title-view.js';
 import PopupCommentView from '../view/popup-comment-view.js';
 import PopupNewCommentView from '../view/popup-new-comment-view.js';
 
-const renderList = (rendering) => (contentItem) => rendering(contentItem);
+const MOVIE_COUNT_PER_STEP = 5;
 
 export default class BoardPresenter {
   #boardContainer = null;
@@ -31,6 +31,10 @@ export default class BoardPresenter {
   #commentsContainerComponent = new PopupCommentsView();
   #commentsWrap = null;
   #newCommentComponent = new PopupNewCommentView();
+  #showMoreButtonComponent = new ShowMoreButtonView();
+
+  #boardMovies = [];
+  #renderedMovieCount = MOVIE_COUNT_PER_STEP;
 
   constructor(container, movieModel, commentsModel) {
     this.#boardContainer = container;
@@ -38,30 +42,48 @@ export default class BoardPresenter {
     this.#commentsModel = commentsModel;
   }
 
-  get boardMovies() {
-    return [...this.#movieModel.movies];
-  }
-
   get comments() {
     return [...this.#commentsModel.comments];
   }
 
   init = () => {
+    this.#boardMovies = [...this.#movieModel.movies];
+
     render(this.#boardComponent, this.#boardContainer);
     render(this.#listComponent, this.#boardComponent.element);
-    render(new FilmsListTitleView(this.boardMovies), this.#listComponent.element);
+    render(new FilmsListTitleView(this.#boardMovies), this.#listComponent.element);
     render(this.#filmsContainerComponent, this.#listComponent.element);
 
-    this.boardMovies.forEach(renderList(this.#renderMovie));
+    for (let i = 0; i < Math.min(this.#boardMovies.length, MOVIE_COUNT_PER_STEP); i++) {
+      this.#renderMovie(this.#boardMovies[i]);
+    }
 
-    render(new ShowMoreButtonView(), this.#listComponent.element);
+    if (this.#boardMovies.length > MOVIE_COUNT_PER_STEP) {
+      render(this.#showMoreButtonComponent, this.#listComponent.element);
+
+      this.#showMoreButtonComponent.element.addEventListener('click', this.#handleShowMoreClick);
+    }
+  };
+
+  #handleShowMoreClick = (evt) => {
+    evt.preventDefault();
+    this.#boardMovies
+      .slice(this.#renderedMovieCount, this.#renderedMovieCount + MOVIE_COUNT_PER_STEP)
+      .forEach((movie) => this.#renderMovie(movie));
+
+    this.#renderedMovieCount += MOVIE_COUNT_PER_STEP;
+
+    if (this.#renderedMovieCount >= this.#boardMovies.length) {
+      this.#showMoreButtonComponent.element.remove();
+      this.#showMoreButtonComponent.removeElement();
+    }
   };
 
   #renderMovie = (movie) => {
     const movieComponent = new FilmCardView(movie);
 
     const showPopup = (evt) => {
-      if (!evt.target.parentElement.classList.contains('film-card__controls') && !evt.target.classList.contains('film-card__comments')) {
+      if (!evt.target.parentElement.classList.contains('film-card__controls')) {
         this.#renderPopup(movie, movie.comments);
       }
     };
