@@ -77,7 +77,7 @@ export default class BoardPresenter {
       this.#showMoreButtonComponent.element.remove();
       this.#showMoreButtonComponent.removeElement();
     }
-  }
+  };
 
   #renderMovie = (movie) => {
     const movieComponent = new FilmCardView(movie);

@@ -5,6 +5,6 @@ export default class MovieModel {
   #movies = Array.from({ length: getRandomInteger(0, 22) }, generateMovie);
 
   get movies () {
-    return this.#movies; 
+    return this.#movies;
   }
 }
