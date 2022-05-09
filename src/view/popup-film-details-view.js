@@ -99,7 +99,9 @@ export default class PopupFilmDetailsView extends AbstractView {
   #clickHandler = (evt) => {
     evt.preventDefault();
 
-    if (evt.target.parentElement.classList.contains('film-card__controls')) return; 
+    if (evt.target.parentElement.classList.contains('film-card__controls')) {
+      return;
+    }
 
     this._callback.click();
   };
