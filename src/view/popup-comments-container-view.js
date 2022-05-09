@@ -1,4 +1,4 @@
-import { createElement } from '../render.js';
+import AbstractView  from '../framework/view/abstract-view.js';
 
 const createContainerTemplate = () => (`
   <div class="film-details__bottom-container">
@@ -8,22 +8,8 @@ const createContainerTemplate = () => (`
   </div>
 `);
 
-export default class PopupCommentsView {
-  #element = null;
-
+export default class PopupCommentsView extends AbstractView {
   get template() {
     return createContainerTemplate();
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
   }
 }

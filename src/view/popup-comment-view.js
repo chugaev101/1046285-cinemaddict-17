@@ -1,4 +1,4 @@
-import { createElement } from '../render.js';
+import AbstractView  from '../framework/view/abstract-view.js';
 
 const createCommentTemplate = (commentsItem) => {
   const { author, comment, date, emotion } = commentsItem;
@@ -20,27 +20,15 @@ const createCommentTemplate = (commentsItem) => {
   );
 };
 
-export default class PopupCommentView {
+export default class PopupCommentView extends AbstractView {
   #comment = null;
-  #element = null;
 
   constructor(comment) {
+    super();
     this.#comment = comment;
   }
 
   get template() {
     return createCommentTemplate(this.#comment);
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
   }
 }
