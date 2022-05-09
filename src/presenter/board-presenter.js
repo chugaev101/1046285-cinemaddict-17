@@ -73,7 +73,9 @@ export default class BoardPresenter {
 
     this.#renderedMovieCount += MOVIE_COUNT_PER_STEP;
 
-    if (this.#renderedMovieCount >= this.#boardMovies.length) remove(this.#showMoreButtonComponent);
+    if (this.#renderedMovieCount >= this.#boardMovies.length) {
+      remove(this.#showMoreButtonComponent);
+    }
   };
 
   #renderMovie = (movie) => {
@@ -87,10 +89,11 @@ export default class BoardPresenter {
   };
 
   #renderPopup = (movie, commentsIds) => {
-    if (this.#filmInfoComponent) this.#hidePopup();
+    if (this.#filmInfoComponent) {
+      this.#hidePopup();
+    }
 
     this.#filmInfoComponent = new PopupFilmDetailsView(movie);
-    console.log(this.#commentsContainerComponent)
     this.#commentsWrap = this.#commentsContainerComponent.element.querySelector('.film-details__comments-list');
 
     render(this.#popupContainerComponent, document.body);
