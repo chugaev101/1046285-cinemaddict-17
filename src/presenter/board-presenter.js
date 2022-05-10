@@ -1,4 +1,4 @@
-import { render, RenderPosition } from '../render';
+import {RenderPosition, render, remove} from '../framework/render.js';
 import FilmsBoardView from '../view/films-board-view.js';
 import FilmsListView from '../view/films-list-view.js';
 import FilmsListTitleView from '../view/films-list-title-view.js';
@@ -19,6 +19,7 @@ const MOVIE_COUNT_PER_STEP = 5;
 export default class BoardPresenter {
   #boardContainer = null;
   #movieModel = null;
+  #movieComponent = null;
   #commentsModel = null;
   #boardComponent = new FilmsBoardView();
   #listComponent = new FilmsListView();
@@ -61,12 +62,11 @@ export default class BoardPresenter {
     if (this.#boardMovies.length > MOVIE_COUNT_PER_STEP) {
       render(this.#showMoreButtonComponent, this.#listComponent.element);
 
-      this.#showMoreButtonComponent.element.addEventListener('click', this.#handleShowMoreClick);
+      this.#showMoreButtonComponent.setClickHandler(this.#handleShowMoreClick);
     }
   };
 
-  #handleShowMoreClick = (evt) => {
-    evt.preventDefault();
+  #handleShowMoreClick = () => {
     this.#boardMovies
       .slice(this.#renderedMovieCount, this.#renderedMovieCount + MOVIE_COUNT_PER_STEP)
       .forEach((movie) => this.#renderMovie(movie));
@@ -74,23 +74,18 @@ export default class BoardPresenter {
     this.#renderedMovieCount += MOVIE_COUNT_PER_STEP;
 
     if (this.#renderedMovieCount >= this.#boardMovies.length) {
-      this.#showMoreButtonComponent.element.remove();
-      this.#showMoreButtonComponent.removeElement();
+      remove(this.#showMoreButtonComponent);
     }
   };
 
   #renderMovie = (movie) => {
-    const movieComponent = new FilmCardView(movie);
+    this.#movieComponent = new FilmCardView(movie);
 
-    const showPopup = (evt) => {
-      if (!evt.target.parentElement.classList.contains('film-card__controls')) {
-        this.#renderPopup(movie, movie.comments);
-      }
-    };
+    const showPopup = () => this.#renderPopup(movie, movie.comments);
 
-    movieComponent.element.addEventListener('click', showPopup);
+    this.#movieComponent.setClickHandler(showPopup);
 
-    render(movieComponent, this.#filmsContainerComponent.element);
+    render(this.#movieComponent, this.#filmsContainerComponent.element);
   };
 
   #renderPopup = (movie, commentsIds) => {
@@ -122,19 +117,18 @@ export default class BoardPresenter {
     this.#commentsTitleComponent = new PopupCommentsTitleView(commentsCount);
     render(this.#commentsTitleComponent, this.#commentsContainerComponent.element, RenderPosition.AFTERBEGIN);
 
-    this.#filmInfoComponent.element.querySelector('.film-details__close-btn').addEventListener('click', this.#hidePopup);
+    this.#filmInfoComponent.setClickHandler(this.#hidePopup);
 
     document.addEventListener('keydown', this.#escDownHandler);
   };
 
   #hidePopup = () => {
-    this.#popupContainerComponent.element.remove();
-    this.#popupContainerComponent.removeElement();
-    this.#formComponent.removeElement();
-    this.#filmInfoComponent.removeElement();
-    this.#commentsTitleComponent.removeElement();
-    this.#commentsContainerComponent.removeElement();
-    this.#newCommentComponent.removeElement();
+    remove(this.#popupContainerComponent);
+    remove(this.#formComponent);
+    remove(this.#filmInfoComponent);
+    remove(this.#commentsTitleComponent);
+    remove(this.#commentsContainerComponent);
+    remove(this.#newCommentComponent);
 
     document.body.classList.remove('hide-overflow');
 

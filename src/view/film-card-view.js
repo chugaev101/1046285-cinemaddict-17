@@ -1,4 +1,4 @@
-import { createElement } from '../render.js';
+import AbstractView  from '../framework/view/abstract-view.js';
 import { humanizeShortDate } from '../utils.js';
 
 const createCardTemplate = (movie) => {
@@ -32,11 +32,11 @@ const createCardTemplate = (movie) => {
   );
 };
 
-export default class FilmCardView {
+export default class FilmCardView extends AbstractView {
   #movie = null;
-  #element = null;
 
   constructor(movie) {
+    super();
     this.#movie = movie;
   }
 
@@ -44,15 +44,18 @@ export default class FilmCardView {
     return createCardTemplate(this.#movie);
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
+  setClickHandler = (callback) =>  {
+    this._callback.click = callback;
+    this.element.addEventListener('click', this.#clickHandler);
+  };
+
+  #clickHandler = (evt) => {
+    evt.preventDefault();
+
+    if (evt.target.parentElement.classList.contains('film-card__controls')) {
+      return;
     }
 
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
-  }
+    this._callback.click();
+  };
 }

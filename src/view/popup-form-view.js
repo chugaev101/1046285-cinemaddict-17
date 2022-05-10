@@ -1,23 +1,9 @@
-import { createElement } from '../render.js';
+import AbstractView  from '../framework/view/abstract-view.js';
 
 const createFormTemplate = () => '<form class="film-details__inner" action="" method="get"></form>';
 
-export default class PopupFormView {
-  #element = null;
-
+export default class PopupFormView extends AbstractView {
   get template() {
     return createFormTemplate();
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
   }
 }

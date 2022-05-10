@@ -1,4 +1,4 @@
-import { createElement } from '../render.js';
+import AbstractView  from '../framework/view/abstract-view.js';
 import { humanizeLongDate } from '../utils.js';
 
 const createDetailsTemplate = (movie) => {
@@ -79,11 +79,11 @@ const createDetailsTemplate = (movie) => {
   );
 };
 
-export default class PopupFilmDetailsView {
+export default class PopupFilmDetailsView extends AbstractView {
   #movie = null;
-  #element = null;
 
   constructor(movie) {
+    super();
     this.#movie = movie;
   }
 
@@ -91,15 +91,18 @@ export default class PopupFilmDetailsView {
     return createDetailsTemplate(this.#movie);
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
+  setClickHandler = (callback) =>  {
+    this._callback.click = callback;
+    this.element.querySelector('.film-details__close-btn').addEventListener('click', this.#clickHandler);
+  };
+
+  #clickHandler = (evt) => {
+    evt.preventDefault();
+
+    if (evt.target.parentElement.classList.contains('film-card__controls')) {
+      return;
     }
 
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
-  }
+    this._callback.click();
+  };
 }
