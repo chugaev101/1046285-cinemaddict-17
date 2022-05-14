@@ -22,7 +22,7 @@ export default class BoardPresenter {
   #topRatedMovieModel = null;
   #mostCommentedMovieModel = null;
   #commentsModel = null;
-  
+
   #boardContainer = null;
   #movieComponent = null;
   #boardComponent = new FilmsBoardView();
@@ -99,7 +99,7 @@ export default class BoardPresenter {
 
     render(this.#movieComponent, container.element.children[1]);
   };
-  
+
   #handleShowMoreClick = () => {
     this.#boardMovies
       .slice(this.#renderedMovieCount, this.#renderedMovieCount + MOVIE_COUNT_PER_STEP)

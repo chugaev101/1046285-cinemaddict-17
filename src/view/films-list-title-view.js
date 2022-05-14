@@ -3,7 +3,7 @@ import AbstractView  from '../framework/view/abstract-view.js';
 const createTitleTemplate = (movies, isTopRated, isMostCommented) => {
   const isHidden = isTopRated === false && isMostCommented === false;
   let title = '';
-  let hiddenClass = 'visually-hidden';
+  const hiddenClass = 'visually-hidden';
 
   if (!movies.length) {
     title = 'There are no movies in our database';

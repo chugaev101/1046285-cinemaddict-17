@@ -30,7 +30,7 @@ const getTitle = () => {
 };
 
 const getGenres = () => {
-  let genresReturned = new Set();
+  const genresReturned = new Set();
 
   for (let i = 0; i <= getRandomInteger(1, 3); i++) {
     genresReturned.add(genres[getRandomInteger(0, genres.length - 1)]);

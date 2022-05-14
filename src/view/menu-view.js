@@ -10,10 +10,10 @@ const createMenuTemplate = (movies) => {
 
     if (details.already_watched) {
       countViewed++;
-    } 
+    }
     if (details.watchlist) {
       countWatchlist++;
-    } 
+    }
     if (details.favorite) {
       countFavorite++;
     }
@@ -26,7 +26,7 @@ const createMenuTemplate = (movies) => {
           <a href="#history" class="main-navigation__item">History <span class="main-navigation__item-count">${countViewed}</span></a>
           <a href="#favorites" class="main-navigation__item">Favorites <span class="main-navigation__item-count">${countFavorite}</span></a>
       </nav>`
-  )
+  );
 };
 
 export default class MenuView extends AbstractView {
