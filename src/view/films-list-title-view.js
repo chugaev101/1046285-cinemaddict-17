@@ -1,27 +1,41 @@
 import AbstractView  from '../framework/view/abstract-view.js';
 
-const createTitleTemplate = (movies) => {
+const createTitleTemplate = (movies, isTopRated, isMostCommented) => {
+  const isHidden = isTopRated === false && isMostCommented === false;
   let title = '';
-  let hiddenClass;
+  const hiddenClass = 'visually-hidden';
 
   if (!movies.length) {
     title = 'There are no movies in our database';
   } else {
-    hiddenClass = 'visually-hidden';
+    switch (true) {
+      case isTopRated && isMostCommented:
+        throw new Error('Expected single argument equal to true.');
+      case isTopRated:
+        title = 'Top rated';
+        break;
+      case isMostCommented:
+        title = 'Most commented';
+        break;
+    }
   }
 
-  return `<h2 class="films-list__title ${hiddenClass}">${title}</h2>`;
+  return `<h2 class="films-list__title ${isHidden ? hiddenClass : ''}">${title}</h2>`;
 };
 
-export default class FilmsBoardView extends AbstractView {
+export default class FilmsListTitleView extends AbstractView {
   #movies = null;
+  #isTopRated = null;
+  #isMostCommented = null;
 
-  constructor(movies) {
+  constructor(movies, isTopRated = false, isMostCommented = false) {
     super();
     this.#movies = movies;
+    this.#isTopRated = isTopRated;
+    this.#isMostCommented = isMostCommented;
   }
 
   get template() {
-    return createTitleTemplate(this.#movies);
+    return createTitleTemplate(this.#movies, this.#isTopRated, this.#isMostCommented);
   }
 }

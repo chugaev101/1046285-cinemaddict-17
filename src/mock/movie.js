@@ -1,6 +1,7 @@
 import { getRandomInteger } from '../utils.js';
 
 const ages = [6, 12, 18, 21];
+const genres = ['Action', 'Comedy', 'Drama', 'Fantasy', 'Horror', 'Mystery', 'Romance', 'Thriller'];
 
 const getMovies = () => ({
   'Made for each other': 'made-for-each-other.jpg',
@@ -28,6 +29,16 @@ const getTitle = () => {
   return values[getRandomInteger(0, values.length - 1)];
 };
 
+const getGenres = () => {
+  const genresReturned = new Set();
+
+  for (let i = 0; i <= getRandomInteger(1, 3); i++) {
+    genresReturned.add(genres[getRandomInteger(0, genres.length - 1)]);
+  }
+
+  return Array.from(genresReturned);
+};
+
 const getRandomBoolean = () => getRandomInteger() === 1;
 
 export const generateMovie = () => {
@@ -43,14 +54,14 @@ export const generateMovie = () => {
       'poster': `./images/posters/${getMovies()[title]}`,
       'age_rating': `${ages[getRandomInteger(0, ages.length - 1)]}+`,
       'director': 'Director Directorovich',
-      'writers': ['Biba', 'Boba'],
+      'writers': ['Biba', 'Boba'].join(', '),
       'actors': ['Leonardo DiCaprio', 'Leonardo DiCaprio', 'Leonardo DiCaprio', 'Leonardo DiCaprio'].join(', '),
       'release': {
         'date': '2019-05-11T00:00:00.000Z',
         'release_country': 'USA',
       },
       'runtime': '1h 55m',
-      'genre': ['Drama'].join('  '),
+      'genre': getGenres().join(', '),
       'description': 'Nullam tortor velit, aliquam sed semper quis, posuere ac felis. Etiam tempus cursus ante id dapibus. Curabitur et dictum felis, in ullamcorper sapien. Nulla non eros vel mi blandit tincidunt et ut nibh.',
     },
     'user_details': {
