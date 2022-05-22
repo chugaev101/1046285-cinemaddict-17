@@ -1,4 +1,5 @@
 import { getRandomInteger } from '../utils.js';
+import dayjs from 'dayjs';
 import { nanoid } from 'nanoid';
 
 const ages = [6, 12, 18, 21];
@@ -40,7 +41,11 @@ const getGenres = () => {
   return Array.from(genresReturned);
 };
 
+const getReleaseDate = () => dayjs().add(-getRandomInteger(0, 79), 'year').format();
+
 const getRandomBoolean = () => getRandomInteger() === 1;
+
+const getTotalRating = () => `${getRandomInteger(1, 9)}.${getRandomInteger(1, 9)}`;
 
 export const generateMovie = () => {
   const title = getTitle();
@@ -51,14 +56,14 @@ export const generateMovie = () => {
     'filmInfo': {
       'title': title,
       'alternativeTitle': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      'totalRating': `${getRandomInteger(1, 9)}.${getRandomInteger(1, 9)}`,
+      'totalRating': getTotalRating(),
       'poster': `./images/posters/${getMovies()[title]}`,
       'ageRating': `${ages[getRandomInteger(0, ages.length - 1)]}+`,
       'director': 'Director Directorovich',
       'writers': ['Biba', 'Boba'].join(', '),
       'actors': ['Leonardo DiCaprio', 'Leonardo DiCaprio', 'Leonardo DiCaprio', 'Leonardo DiCaprio'].join(', '),
       'release': {
-        'date': '2019-05-11T00:00:00.000Z',
+        'date': getReleaseDate(),
         'releaseCountry': 'USA',
       },
       'runtime': '1h 55m',
