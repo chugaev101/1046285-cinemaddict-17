@@ -1,4 +1,5 @@
 import { getRandomInteger } from '../utils.js';
+import { nanoid } from 'nanoid';
 
 const ages = [6, 12, 18, 21];
 const genres = ['Action', 'Comedy', 'Drama', 'Fantasy', 'Horror', 'Mystery', 'Romance', 'Thriller'];
@@ -45,12 +46,12 @@ export const generateMovie = () => {
   const title = getTitle();
 
   return ({
-    'id': getRandomInteger(1, 5),
+    'id': nanoid(),
     'comments': Array.from(getCommentsIds()),
     'film_info': {
       'title': title,
       'alternative_title': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      'total_rating': getRandomInteger(1, 9) + 0.5,
+      'total_rating': `${getRandomInteger(1, 9)}.${getRandomInteger(1, 9)}`,
       'poster': `./images/posters/${getMovies()[title]}`,
       'age_rating': `${ages[getRandomInteger(0, ages.length - 1)]}+`,
       'director': 'Director Directorovich',
