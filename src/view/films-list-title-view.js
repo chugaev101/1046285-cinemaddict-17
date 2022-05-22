@@ -1,7 +1,8 @@
 import AbstractView  from '../framework/view/abstract-view.js';
 
 const createTitleTemplate = (movies, isTopRated, isMostCommented) => {
-  const isHidden = isTopRated === false && isMostCommented === false;
+  const isHidden = isTopRated === false && isMostCommented === false && movies.length;
+
   let title = '';
   const hiddenClass = 'visually-hidden';
 

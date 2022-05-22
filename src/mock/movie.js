@@ -1,4 +1,5 @@
 import { getRandomInteger } from '../utils.js';
+import { nanoid } from 'nanoid';
 
 const ages = [6, 12, 18, 21];
 const genres = ['Action', 'Comedy', 'Drama', 'Fantasy', 'Horror', 'Mystery', 'Romance', 'Thriller'];
@@ -45,29 +46,29 @@ export const generateMovie = () => {
   const title = getTitle();
 
   return ({
-    'id': getRandomInteger(1, 5),
+    'id': nanoid(),
     'comments': Array.from(getCommentsIds()),
-    'film_info': {
+    'filmInfo': {
       'title': title,
-      'alternative_title': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      'total_rating': getRandomInteger(1, 9) + 0.5,
+      'alternativeTitle': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+      'totalRating': `${getRandomInteger(1, 9)}.${getRandomInteger(1, 9)}`,
       'poster': `./images/posters/${getMovies()[title]}`,
-      'age_rating': `${ages[getRandomInteger(0, ages.length - 1)]}+`,
+      'ageRating': `${ages[getRandomInteger(0, ages.length - 1)]}+`,
       'director': 'Director Directorovich',
       'writers': ['Biba', 'Boba'].join(', '),
       'actors': ['Leonardo DiCaprio', 'Leonardo DiCaprio', 'Leonardo DiCaprio', 'Leonardo DiCaprio'].join(', '),
       'release': {
         'date': '2019-05-11T00:00:00.000Z',
-        'release_country': 'USA',
+        'releaseCountry': 'USA',
       },
       'runtime': '1h 55m',
       'genre': getGenres().join(', '),
       'description': 'Nullam tortor velit, aliquam sed semper quis, posuere ac felis. Etiam tempus cursus ante id dapibus. Curabitur et dictum felis, in ullamcorper sapien. Nulla non eros vel mi blandit tincidunt et ut nibh.',
     },
-    'user_details': {
+    'userDetails': {
       'watchlist': getRandomBoolean(),
-      'already_watched': getRandomBoolean(),
-      'watching_date': '2019-04-12T16:12:32.554Z',
+      'alreadyWatched': getRandomBoolean(),
+      'watchingDate': '2019-04-12T16:12:32.554Z',
       'favorite': getRandomBoolean(),
     }
   });

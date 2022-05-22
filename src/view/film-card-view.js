@@ -2,10 +2,10 @@ import AbstractView  from '../framework/view/abstract-view.js';
 import { humanizeShortDate } from '../utils.js';
 
 const createCardTemplate = (movie) => {
-  const { id, comments, film_info: filmInfo, user_details: userDetails } = movie;
-  const { title, total_rating: totalRating, poster, release, runtime, genre, description } = filmInfo;
+  const { id, comments, filmInfo, userDetails } = movie;
+  const { title, totalRating, poster, release, runtime, genre, description } = filmInfo;
   const { date } = release;
-  const { watchlist, already_watched: alreadyWatched, favorite } = userDetails;
+  const { watchlist, alreadyWatched, favorite } = userDetails;
 
   const toggleFilmControls = (control) => control === true ? 'film-card__controls-item--active' : '';
 
@@ -34,6 +34,9 @@ const createCardTemplate = (movie) => {
 
 export default class FilmCardView extends AbstractView {
   #movie = null;
+  #addToWatchlistButton = null;
+  #markToAsWatchedButton = null;
+  #addToFavoriteButton = null;
 
   constructor(movie) {
     super();
@@ -57,5 +60,38 @@ export default class FilmCardView extends AbstractView {
     }
 
     this._callback.click();
+  };
+
+  setClickWatchlistHandler = (callback) =>  {
+    this.#addToWatchlistButton = this.element.querySelector('.film-card__controls-item--add-to-watchlist');
+    this._callback.clickWatchlist = callback;
+    this.#addToWatchlistButton.addEventListener('click', this.#clickAddToWatchlistHandler);
+  };
+
+  setClickAsWatchedHandler = (callback) =>  {
+    this.#markToAsWatchedButton = this.element.querySelector('.film-card__controls-item--mark-as-watched');
+    this._callback.clickAsWatched = callback;
+    this.#markToAsWatchedButton.addEventListener('click', this.#clickMarkToAsWatchedHandler);
+  };
+
+  setClickFavoriteHandler = (callback) =>  {
+    this.#addToFavoriteButton = this.element.querySelector('.film-card__controls-item--favorite');
+    this._callback.clickFavorite = callback;
+    this.#addToFavoriteButton.addEventListener('click', this.#clickAddToFavoriteHandler);
+  };
+
+  #clickAddToWatchlistHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.clickWatchlist();
+  };
+
+  #clickMarkToAsWatchedHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.clickAsWatched();
+  };
+
+  #clickAddToFavoriteHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.clickFavorite();
   };
 }
