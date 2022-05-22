@@ -14,9 +14,7 @@ const createSortTemplate = () => (
 const buttonActiveToggle = (evt) => {
   const sortButtons = document.querySelectorAll('a');
 
-  sortButtons.forEach((button) => {
-    button === evt.target ? button.classList.add(ACTIVE_BUTTON_CLASS) : button.classList.remove(ACTIVE_BUTTON_CLASS);
-  });
+  sortButtons.forEach((button) => button === evt.target ? button.classList.add(ACTIVE_BUTTON_CLASS) : button.classList.remove(ACTIVE_BUTTON_CLASS));
 };
 
 export default class SortView extends AbstractView {
