@@ -34,7 +34,6 @@ export default class BoardPresenter {
   #mostCommentedMovies = [];
   #comments = [];
   #moviePresenter = new Map();
-  
 
   #renderedMovieCount = MOVIE_COUNT_PER_STEP;
 
@@ -45,7 +44,7 @@ export default class BoardPresenter {
     this.#mostCommentedMovieModel = mostCommentedMovieModel;
     this.#commentsModel = commentsModel;
   }
-  
+
   init = () => {
     this.#boardMovies = [...this.#movieModel.movies];
     this.#topRatedMovies = [...this.#topRatedMovieModel.movies];
@@ -125,7 +124,7 @@ export default class BoardPresenter {
     this.#moviePresenter.forEach((presenter) => presenter.destroy());
     this.#moviePresenter.clear();
     this.#renderedMovieCount = MOVIE_COUNT_PER_STEP;
-    remove(this.#showMoreButtonComponent)
+    remove(this.#showMoreButtonComponent);
   };
 
   #rendershowMoreButton = () => {

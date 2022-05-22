@@ -2,10 +2,10 @@ import AbstractView  from '../framework/view/abstract-view.js';
 import { humanizeLongDate } from '../utils.js';
 
 const createDetailsTemplate = (movie) => {
-  const { id, film_info: filmInfo, user_details: userDetails } = movie;
-  const { title, total_rating: totalRating, poster, age_rating: ageRating, director, writers, actors, release, runtime, genre, description } = filmInfo;
-  const { date, release_country: releaseCountry } = release;
-  const { watchlist, already_watched: alreadyWatched, favorite } = userDetails;
+  const { id, filmInfo, userDetails } = movie;
+  const { title, totalRating, poster, ageRating, director, writers, actors, release, runtime, genre, description } = filmInfo;
+  const { date, releaseCountry } = release;
+  const { watchlist, alreadyWatched, favorite } = userDetails;
 
   const toggleFilmControls = (control) => control === true ? 'film-details__control-button--active' : '';
 
@@ -131,7 +131,7 @@ export default class PopupFilmDetailsView extends AbstractView {
     evt.preventDefault();
     this._callback.clickWatchlist();
   };
-  
+
   #clickMarkToAsWatchedHandler = (evt) => {
     evt.preventDefault();
     this._callback.clickAsWatched();

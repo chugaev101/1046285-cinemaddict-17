@@ -67,7 +67,7 @@ const createContainerTemplate = (movie, comments) => {
       </div>
     </section>
   </div>
-`)
+`);
 };
 
 export default class PopupCommentsView extends AbstractView {

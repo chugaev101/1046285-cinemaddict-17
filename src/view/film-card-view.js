@@ -2,10 +2,10 @@ import AbstractView  from '../framework/view/abstract-view.js';
 import { humanizeShortDate } from '../utils.js';
 
 const createCardTemplate = (movie) => {
-  const { id, comments, film_info: filmInfo, user_details: userDetails } = movie;
-  const { title, total_rating: totalRating, poster, release, runtime, genre, description } = filmInfo;
+  const { id, comments, filmInfo, userDetails } = movie;
+  const { title, totalRating, poster, release, runtime, genre, description } = filmInfo;
   const { date } = release;
-  const { watchlist, already_watched: alreadyWatched, favorite } = userDetails;
+  const { watchlist, alreadyWatched, favorite } = userDetails;
 
   const toggleFilmControls = (control) => control === true ? 'film-card__controls-item--active' : '';
 
@@ -84,7 +84,7 @@ export default class FilmCardView extends AbstractView {
     evt.preventDefault();
     this._callback.clickWatchlist();
   };
-  
+
   #clickMarkToAsWatchedHandler = (evt) => {
     evt.preventDefault();
     this._callback.clickAsWatched();

@@ -6,9 +6,9 @@ const createMenuTemplate = (movies) => {
   let countFavorite = 0;
 
   movies.forEach((movie) => {
-    const details = movie.user_details;
+    const details = movie.userDetails;
 
-    if (details.already_watched) {
+    if (details.alreadyWatched) {
       countViewed++;
     }
     if (details.watchlist) {
