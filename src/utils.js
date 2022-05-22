@@ -6,6 +6,10 @@ const humanizeFullDate = (date) => dayjs(date).format('YYYY/MM/DD HH:MM');
 const humanizeLongDate = (date) => dayjs(date).format('D MMMM YYYY');
 const humanizeShortDate = (date) => dayjs(date).format('YYYY');
 
+const sortMovieByDate = (movieA, movieB) => dayjs(movieB.filmInfo.release.date).diff(dayjs(movieA.filmInfo.release.date));
+
+const sortMovieByRating = (movieA, movieB) => movieA.filmInfo.totalRating > movieB.filmInfo.totalRating ? -1 : 1;
+
 const updateItem = (items, update) => {
   const index = items.findIndex((item) => item.id === update.id);
 
@@ -20,4 +24,4 @@ const updateItem = (items, update) => {
   ];
 };
 
-export { getRandomInteger, humanizeLongDate, humanizeShortDate, humanizeFullDate, updateItem };
+export { getRandomInteger, humanizeLongDate, humanizeShortDate, humanizeFullDate, updateItem, sortMovieByDate, sortMovieByRating };
