@@ -35,9 +35,6 @@ export default class MoviePresenter {
     const prevMovieComponent = this.#movieCardComponent;
 
     this.#movieCardComponent = new FilmCardView(this.#movie);
-    this.#filmInfoComponent = new PopupFilmDetailsView(this.#movie);
-    this.#commentsContainerComponent = new PopupCommentsView(this.#movie, this.#comments);
-
     this.#movieCardComponent.setClickHandler(this.#handleShowPopup);
     this.#movieCardComponent.setClickWatchlistHandler(this.#handleWatchlistClick);
     this.#movieCardComponent.setClickAsWatchedHandler(this.#handleAsWatchedClick);
@@ -69,6 +66,9 @@ export default class MoviePresenter {
     if (this.#filmInfoComponent) {
       this.#handleHidePopup();
     }
+
+    this.#filmInfoComponent = new PopupFilmDetailsView(this.#movie);
+    this.#commentsContainerComponent = new PopupCommentsView(this.#movie, this.#comments);
 
     render(this.#popupContainerComponent, document.body);
     render(this.#filmInfoComponent, this.#popupContainerComponent.element.firstChild);

@@ -1,4 +1,4 @@
-import AbstractView from '../framework/view/abstract-view.js';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 
 let commentTemplates = [];
 
@@ -26,9 +26,12 @@ const getCommentsData = (movie, commentsData) => {
   }
 };
 
+const getEmoji = (emotion) => emotion? `<img src="images/emoji/${emotion}.png" width="55" height="55" alt="emoji-${emotion}">` : '';
+
 const createContainerTemplate = (movie, comments) => {
   commentTemplates = [];
   getCommentsData(movie, comments);
+  const {emotion, comment} = movie;
 
   return (`
   <div class="film-details__bottom-container">
@@ -37,10 +40,10 @@ const createContainerTemplate = (movie, comments) => {
       <ul class="film-details__comments-list">${commentTemplates.join('')}</ul>
 
       <div class="film-details__new-comment">
-        <div class="film-details__add-emoji-label"></div>
+        <div class="film-details__add-emoji-label">${getEmoji(emotion)}</div>
 
         <label class="film-details__comment-label">
-          <textarea class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment"></textarea>
+          <textarea class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment">${comment}</textarea>
         </label>
 
         <div class="film-details__emoji-list">
@@ -70,17 +73,50 @@ const createContainerTemplate = (movie, comments) => {
 `);
 };
 
-export default class PopupCommentsView extends AbstractView {
-  #movie = null;
+export default class PopupCommentsView extends AbstractStatefulView {
   #comments = null;
 
   constructor(movie, comments) {
     super();
-    this.#movie = movie;
+    this._state = PopupCommentsView.parseMovieToState(movie);
     this.#comments = comments;
+
+    this.#setInnerHandlers();
   }
 
   get template() {
-    return createContainerTemplate(this.#movie, this.#comments);
+    return createContainerTemplate(this._state, this.#comments);
   }
+
+  #setInnerHandlers = () => {
+    this.element.querySelector('.film-details__emoji-list').addEventListener('change', this.#emojiChangeHandler);
+    this.element.querySelector('.film-details__comment-input').addEventListener('input', this.#commentInputHandler);
+  };
+
+  #emojiChangeHandler = (evt) => {
+    evt.preventDefault();
+    const emotionAlt = evt.target.id;
+
+    this.updateElement({
+      emotion: evt.target.value,
+    });
+    this.element.querySelector(`#${emotionAlt}`).checked = true;
+  };
+
+  #commentInputHandler = (evt) => {
+    evt.preventDefault();
+    this._setState({
+      comment: evt.target.value,
+    });
+  };
+
+  static parseMovieToState = (movie) => ({
+    ...movie,
+    comment: '',
+    emotion: '',
+  });
+
+  _restoreHandlers = () => {
+    this.#setInnerHandlers();
+  };
 }

@@ -10,6 +10,10 @@ const sortMovieByDate = (movieA, movieB) => dayjs(movieB.filmInfo.release.date).
 
 const sortMovieByRating = (movieA, movieB) => movieA.filmInfo.totalRating > movieB.filmInfo.totalRating ? -1 : 1;
 
+const renderList = (items, renderRange, render, container) => {
+  items.slice(0, Math.min(items.length, renderRange)).forEach((item) => render(item, container));
+};
+
 const updateItem = (items, update) => {
   const index = items.findIndex((item) => item.id === update.id);
 
@@ -24,4 +28,4 @@ const updateItem = (items, update) => {
   ];
 };
 
-export { getRandomInteger, humanizeLongDate, humanizeShortDate, humanizeFullDate, updateItem, sortMovieByDate, sortMovieByRating };
+export { getRandomInteger, humanizeLongDate, humanizeShortDate, humanizeFullDate, updateItem, sortMovieByDate, sortMovieByRating, renderList };
