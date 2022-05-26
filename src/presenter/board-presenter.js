@@ -1,4 +1,4 @@
-import { updateItem, sortMovieByDate, sortMovieByRating } from '../utils.js';
+import { updateItem, sortMovieByDate, sortMovieByRating, renderList } from '../utils.js';
 import { RenderPosition, render, remove } from '../framework/render.js';
 import MenuView from '../view/menu-view.js';
 import SortView from '../view/sort-view.js';
@@ -12,6 +12,11 @@ import { SortType } from '../const.js';
 const MOVIE_COUNT_PER_STEP = 5;
 const TOP_RATED_MOVIE_COUNT_PER_STEP = 2;
 const MOST_COMMENTED_MOVIE_COUNT_PER_STEP = 2;
+
+const comparers = {
+  [SortType.DATE]: sortMovieByDate,
+  [SortType.RATING]: sortMovieByRating,
+};
 
 export default class BoardPresenter {
   #movieModel = null;
@@ -66,18 +71,16 @@ export default class BoardPresenter {
   };
 
   #sortMovies = (sortType) => {
-    switch (sortType) {
-      case SortType.DATE:
-        this.#boardMovies.sort(sortMovieByDate);
-        break;
-      case SortType.RATING:
-        this.#boardMovies.sort(sortMovieByRating);
-        break;
-      default:
-        this.#boardMovies = [...this.#sourcedBoardMovies];
+    this.#currentSortType = sortType;
+
+    const compare = comparers[this.#currentSortType];
+
+    if(typeof compare === 'function'){
+      this.#boardMovies.sort(compare);
+    } else {
+      this.#boardMovies = [...this.#sourcedBoardMovies];
     }
 
-    this.#currentSortType = sortType;
   };
 
   #handleSortTypeChange = (sortType) => {
@@ -88,9 +91,10 @@ export default class BoardPresenter {
     this.#sortMovies(sortType);
     this.#clearMovieList();
 
-    this.#renderMovies(this.#boardMovies, 0, Math.min(this.#boardMovies.length, this.#renderedMovieCount), this.#mainListComponent);
-    this.#renderMovies(this.#topRatedMovies, 0, Math.min(this.#topRatedMovies.length, TOP_RATED_MOVIE_COUNT_PER_STEP), this.#topRatedListComponent);
-    this.#renderMovies(this.#mostCommentedMovies, 0, Math.min(this.#mostCommentedMovies.length, MOST_COMMENTED_MOVIE_COUNT_PER_STEP), this.#mostCommentedListComponent);
+    renderList(this.#boardMovies, this.#renderedMovieCount, this.#renderMovie, this.#mainListComponent);
+    renderList(this.#topRatedMovies, TOP_RATED_MOVIE_COUNT_PER_STEP, this.#renderMovie, this.#topRatedListComponent);
+    renderList(this.#mostCommentedMovies, MOST_COMMENTED_MOVIE_COUNT_PER_STEP, this.#renderMovie, this.#mostCommentedListComponent);
+
     if (this.#boardMovies.length > this.#renderedMovieCount) {
       this.#rendershowMoreButton();
     }
@@ -111,15 +115,10 @@ export default class BoardPresenter {
     this.#moviePresenter.set(movie.id, moviePresenter);
   };
 
-  #renderMovies = (movies, from, to, container) => {
-    movies.slice(from, to)
-      .forEach((movie) => this.#renderMovie(movie, container));
-  };
-
   #renderMainMovieList = () => {
     this.#renderTitle(this.#boardMovies, this.#mainListComponent);
     render(this.#mainListComponent, this.#boardComponent.element);
-    this.#renderMovies(this.#boardMovies, 0, Math.min(this.#boardMovies.length, MOVIE_COUNT_PER_STEP), this.#mainListComponent);
+    renderList(this.#boardMovies, MOVIE_COUNT_PER_STEP, this.#renderMovie, this.#mainListComponent);
 
     if (this.#boardMovies.length > MOVIE_COUNT_PER_STEP) {
       this.#rendershowMoreButton();
@@ -133,8 +132,7 @@ export default class BoardPresenter {
 
     render(this.#topRatedListComponent, this.#boardComponent.element);
     this.#renderTitle(this.#topRatedMovies, this.#topRatedListComponent, true, false);
-
-    this.#renderMovies(this.#topRatedMovies, 0, Math.min(this.#topRatedMovies.length, TOP_RATED_MOVIE_COUNT_PER_STEP), this.#topRatedListComponent);
+    renderList(this.#topRatedMovies, TOP_RATED_MOVIE_COUNT_PER_STEP, this.#renderMovie, this.#topRatedListComponent);
   };
 
   #renderMostCommentedMovieList = () => {
@@ -144,7 +142,7 @@ export default class BoardPresenter {
 
     render(this.#mostCommentedListComponent, this.#boardComponent.element);
     this.#renderTitle(this.#mostCommentedMovies, this.#mostCommentedListComponent, false, true);
-    this.#renderMovies(this.#mostCommentedMovies, 0, Math.min(this.#mostCommentedMovies.length, MOST_COMMENTED_MOVIE_COUNT_PER_STEP), this.#mostCommentedListComponent);
+    renderList(this.#mostCommentedMovies, MOST_COMMENTED_MOVIE_COUNT_PER_STEP, this.#renderMovie, this.#mostCommentedListComponent);
   };
 
   #handleMovieChange = (updateMovie) => {
