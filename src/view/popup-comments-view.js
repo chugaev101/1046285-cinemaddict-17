@@ -1,6 +1,29 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
+import dayjs from 'dayjs';
+import { humanizeFullDate } from '../utils.js';
 
 let commentTemplates = [];
+
+const formattingOfDate = (date) => {
+  let formatDate = null;
+
+  switch (dayjs().diff(date, 'day')) {
+    case 0:
+      formatDate = 'Today';
+      break;
+    case 1:
+      formatDate = 'Yesterday';
+      break;
+    case 2:
+      formatDate = '2 days ago';
+      break;
+    default:
+      formatDate = humanizeFullDate(date);
+      break;
+  }
+
+  return formatDate;
+};
 
 const getCommentsData = (movie, commentsData) => {
   for (const commentItem of commentsData) {
@@ -16,7 +39,7 @@ const getCommentsData = (movie, commentsData) => {
             <p class="film-details__comment-text">${comment}</p>
             <p class="film-details__comment-info">
               <span class="film-details__comment-author">${author}</span>
-              <span class="film-details__comment-day">${date}</span>
+              <span class="film-details__comment-day">${formattingOfDate(date)}</span>
               <button class="film-details__comment-delete">Delete</button>
             </p>
           </div>
