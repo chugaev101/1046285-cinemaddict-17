@@ -47,6 +47,8 @@ const getRandomBoolean = () => getRandomInteger() === 1;
 
 const getTotalRating = () => `${getRandomInteger(1, 9)}.${getRandomInteger(1, 9)}`;
 
+const getRuntime = () => getRandomInteger(90, 150);
+
 export const generateMovie = () => {
   const title = getTitle();
 
@@ -66,7 +68,7 @@ export const generateMovie = () => {
         'date': getReleaseDate(),
         'releaseCountry': 'USA',
       },
-      'runtime': '1h 55m',
+      'runtime': getRuntime(),
       'genre': getGenres().join(', '),
       'description': 'Nullam tortor velit, aliquam sed semper quis, posuere ac felis. Etiam tempus cursus ante id dapibus. Curabitur et dictum felis, in ullamcorper sapien. Nulla non eros vel mi blandit tincidunt et ut nibh.',
     },

@@ -5,10 +5,12 @@ const getRandomInteger = (lower = 0, upper = 1) => Math.floor(lower + Math.rando
 const humanizeFullDate = (date) => dayjs(date).format('YYYY/MM/DD HH:MM');
 const humanizeLongDate = (date) => dayjs(date).format('D MMMM YYYY');
 const humanizeShortDate = (date) => dayjs(date).format('YYYY');
+const formatMinutesToRuntime = (minutes) => minutes / 60 > 0 ? `${Math.floor(minutes / 60)}h ${minutes % 60}m` : `${minutes}m`;
 
 const sortMovieByDate = (movieA, movieB) => dayjs(movieB.filmInfo.release.date).diff(dayjs(movieA.filmInfo.release.date));
-
 const sortMovieByRating = (movieA, movieB) => movieA.filmInfo.totalRating > movieB.filmInfo.totalRating ? -1 : 1;
+
+const sortCommentsByDate = (commentA, commentB) => dayjs(commentA.date).diff(dayjs(commentB.date));
 
 const renderList = (items, renderRange, render, container) => {
   items.slice(0, Math.min(items.length, renderRange)).forEach((item) => render(item, container));
@@ -28,4 +30,4 @@ const updateItem = (items, update) => {
   ];
 };
 
-export { getRandomInteger, humanizeLongDate, humanizeShortDate, humanizeFullDate, updateItem, sortMovieByDate, sortMovieByRating, renderList };
+export { getRandomInteger, humanizeLongDate, humanizeShortDate, humanizeFullDate, updateItem, sortMovieByDate, sortMovieByRating, sortCommentsByDate, renderList, formatMinutesToRuntime };

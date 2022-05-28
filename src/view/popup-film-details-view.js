@@ -1,5 +1,5 @@
 import AbstractView  from '../framework/view/abstract-view.js';
-import { humanizeLongDate } from '../utils.js';
+import { humanizeLongDate, formatMinutesToRuntime } from '../utils.js';
 
 const createDetailsTemplate = (movie) => {
   const { id, filmInfo, userDetails } = movie;
@@ -52,7 +52,7 @@ const createDetailsTemplate = (movie) => {
             </tr>
             <tr class="film-details__row">
               <td class="film-details__term">Runtime</td>
-              <td class="film-details__cell">${runtime}</td>
+              <td class="film-details__cell">${formatMinutesToRuntime(runtime)}</td>
             </tr>
             <tr class="film-details__row">
               <td class="film-details__term">Country</td>

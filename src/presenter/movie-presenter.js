@@ -1,4 +1,5 @@
 import { render, remove, replace } from '../framework/render.js';
+import { sortCommentsByDate } from '../utils.js';
 import FilmCardView from '../view/film-card-view.js';
 
 import PopupContainerView from '../view/popup-container-view.js';
@@ -25,7 +26,7 @@ export default class MoviePresenter {
 
   constructor(movieListContainer, comments, changeData, changeMode) {
     this.#movieListContainer = movieListContainer;
-    this.#comments = comments;
+    this.#comments = comments.sort(sortCommentsByDate);
     this.#changeData = changeData;
     this.#changeMode = changeMode;
   }
