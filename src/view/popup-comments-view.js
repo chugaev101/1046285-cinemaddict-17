@@ -4,26 +4,17 @@ import { humanizeFullDate } from '../utils.js';
 
 let commentTemplates = [];
 
-const formattingOfDate = (date) => {
-  let formatDate = null;
+const settings = new Map([
+  [0,()=>'Today'],
+  [1,()=>'Yesterday'],
+  [2,()=>'2 days ago'],
+]);
 
-  switch (dayjs().diff(date, 'day')) {
-    case 0:
-      formatDate = 'Today';
-      break;
-    case 1:
-      formatDate = 'Yesterday';
-      break;
-    case 2:
-      formatDate = '2 days ago';
-      break;
-    default:
-      formatDate = humanizeFullDate(date);
-      break;
-  }
+const daysAgo = (date)=>dayjs().diff(date, 'day');
 
-  return formatDate;
-};
+const getFormatter = (count)=> settings.get(count) || humanizeFullDate;
+
+const formattingOfDate = (date) => (getFormatter(daysAgo(date)))(date);
 
 const getCommentsData = (movie, commentsData) => {
   for (const commentItem of commentsData) {
@@ -50,6 +41,30 @@ const getCommentsData = (movie, commentsData) => {
 };
 
 const getEmoji = (emotion) => emotion? `<img src="images/emoji/${emotion}.png" width="55" height="55" alt="emoji-${emotion}">` : '';
+
+const validateCommentInput = (element) => {
+  const emotionNode = element.querySelector('.film-details__add-emoji-label');
+  const commentInput = element.querySelector('.film-details__comment-input');
+
+  if (!emotionNode.children.length || !commentInput.value.length) {
+    if (!emotionNode.children.length) {
+      emotionNode.style.boxShadow = '0 0 15px 0 #ff0000';
+      setTimeout(() => {
+        emotionNode.style.boxShadow = 'none';
+      }, 1000);
+    }
+
+    if (!commentInput.value.length) {
+      commentInput.style.boxShadow = '0 0 15px 0 #ff0000';
+      setTimeout(() => {
+        commentInput.style.boxShadow = 'none';
+      }, 1000);
+    }
+    return false;
+  } else {
+    return true;
+  }
+};
 
 const createContainerTemplate = (movie, comments) => {
   commentTemplates = [];
@@ -114,6 +129,8 @@ export default class PopupCommentsView extends AbstractStatefulView {
   #setInnerHandlers = () => {
     this.element.querySelector('.film-details__emoji-list').addEventListener('change', this.#emojiChangeHandler);
     this.element.querySelector('.film-details__comment-input').addEventListener('input', this.#commentInputHandler);
+    this.element.addEventListener('keydown', this.#addCommentHandler);
+    this.element.querySelectorAll('.film-details__comment-delete').forEach((button) => button.addEventListener('click', this.#deleteCommentHandler));
   };
 
   #emojiChangeHandler = (evt) => {
@@ -141,5 +158,32 @@ export default class PopupCommentsView extends AbstractStatefulView {
 
   _restoreHandlers = () => {
     this.#setInnerHandlers();
+  };
+
+  setAddCommentHandler = (callback) =>  {
+    this._callback.addComment = callback;
+    this.element.addEventListener('keydown', this.#addCommentHandler);
+  };
+
+  setDeleteCommentHandler = (callback) =>  {
+    this._callback.deleteComment = callback;
+    this.element.querySelectorAll('.film-details__comment-delete').forEach((button) => button.addEventListener('click', this.#deleteCommentHandler));
+  };
+
+  #addCommentHandler = (evt) => {
+    if ((evt.ctrlKey || evt.metaKey) && evt.keyCode === 13) {
+      evt.preventDefault();
+
+      if (!validateCommentInput(this.element)) {
+        return;
+      }
+
+      this._callback.addComment();
+    }
+  };
+
+  #deleteCommentHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.deleteComment();
   };
 }

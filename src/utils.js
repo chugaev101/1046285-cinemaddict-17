@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import { FilterType } from './const.js';
 
 const getRandomInteger = (lower = 0, upper = 1) => Math.floor(lower + Math.random() * (upper - lower + 1));
 
@@ -9,11 +10,17 @@ const formatMinutesToRuntime = (minutes) => minutes / 60 > 0 ? `${Math.floor(min
 
 const sortMovieByDate = (movieA, movieB) => dayjs(movieB.filmInfo.release.date).diff(dayjs(movieA.filmInfo.release.date));
 const sortMovieByRating = (movieA, movieB) => movieA.filmInfo.totalRating > movieB.filmInfo.totalRating ? -1 : 1;
+const sortMovieByCommentsCount = (movieA, movieB) => movieA.comments.length > movieB.comments.length ? -1 : 1;
 
 const sortCommentsByDate = (commentA, commentB) => dayjs(commentA.date).diff(dayjs(commentB.date));
 
-const renderList = (items, renderRange, render, container) => {
-  items.slice(0, Math.min(items.length, renderRange)).forEach((item) => render(item, container));
+const renderList = (items, render, container, isExtra = false) => items.forEach((item) => render(item, container, isExtra));
+
+const filterMovies = {
+  [FilterType.ALL]: (movies) => movies,
+  [FilterType.HISTORY]: (movies) => movies.filter((movie) => movie.userDetails.alreadyWatched),
+  [FilterType.WATCHLIST]: (movies) => movies.filter((movie) => movie.userDetails.watchlist),
+  [FilterType.FAVORITES]: (movies) => movies.filter((movie) => movie.userDetails.favorite),
 };
 
 const updateItem = (items, update) => {
@@ -30,4 +37,4 @@ const updateItem = (items, update) => {
   ];
 };
 
-export { getRandomInteger, humanizeLongDate, humanizeShortDate, humanizeFullDate, updateItem, sortMovieByDate, sortMovieByRating, sortCommentsByDate, renderList, formatMinutesToRuntime };
+export { getRandomInteger, humanizeLongDate, humanizeShortDate, humanizeFullDate, updateItem, sortMovieByDate, sortMovieByRating, sortMovieByCommentsCount, sortCommentsByDate, renderList, formatMinutesToRuntime, filterMovies };
