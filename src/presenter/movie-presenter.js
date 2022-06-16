@@ -22,15 +22,19 @@ export default class MoviePresenter {
   #changeData = null;
   #changeMode = null;
   #mode = Mode.DEFAULT;
+  #position = 0;
 
   #popupContainerComponent = null;
   #filmInfoComponent = null;
 
-  constructor(movieListContainer, comments, changeData, changeMode) {
+  #commentsModel = null;
+
+  constructor(movieListContainer, comments, changeData, changeMode, commentsModel) {
     this.#movieListContainer = movieListContainer;
     this.#comments = comments.sort(sortCommentsByDate);
     this.#changeData = changeData;
     this.#changeMode = changeMode;
+    this.#commentsModel = commentsModel;
   }
 
   init = (movie) => {
@@ -52,16 +56,22 @@ export default class MoviePresenter {
       replace(this.#movieCardComponent, prevMovieComponent);
     }
 
-    if (this.#mode !== Mode.DEFAULT) {
-      this.#renderFilmDetails();
-      this.#renderFilmDetails();
-    }
-
     remove(prevMovieComponent);
   };
 
+  get mode() {
+    return this.#mode;
+  }
+
+  get position() {
+    return this.#position;
+  }
+
   destroy = () => {
     remove(this.#movieCardComponent);
+    remove(this.#popupContainerComponent);
+    remove(this.#filmInfoComponent);
+    remove(this.#commentsContainerComponent);
   };
 
   resetView = () => {
@@ -70,66 +80,44 @@ export default class MoviePresenter {
     }
   };
 
-  #renderPopup = () => {
-    if (this.#mode === Mode.OPEN) {
-      return;
-    }
+  initPopup = (position) => {
+    this.#renderPopup(position);
+    this.#mode = Mode.OPEN;
+  };
 
+  #renderPopup = (position = 0) => {
     this.#popupContainerComponent = new PopupContainerView();
-    this.#filmInfoComponent = new PopupFilmDetailsView(this.#movie);
-    this.#commentsContainerComponent = new PopupCommentsView(this.#movie, this.#comments);
+
+    render(this.#popupContainerComponent, document.body);
 
     this.#renderFilmDetails(this.#movie);
     this.#renderComments(this.#movie, this.#comments);
 
-
-    render(this.#popupContainerComponent, document.body);
-    render(this.#commentsContainerComponent, this.#popupContainerComponent.element.firstChild);
-
     document.addEventListener('keydown', this.#escDownHandler);
 
     document.body.classList.add('hide-overflow');
+
+    this.#popupContainerComponent.element.scrollTop = position;
 
     this.#changeMode();
     this.#mode = Mode.OPEN;
   };
 
   #renderFilmDetails = () => {
-    if (this.#mode !== Mode.DEFAULT) {
-      const prevFilmDetailsComponent = this.#filmInfoComponent;
-      this.#filmInfoComponent = new PopupFilmDetailsView(this.#movie);
-
-      replace(this.#filmInfoComponent, prevFilmDetailsComponent);
-      this.#filmInfoComponent.setClickWatchlistHandler(this.#handleWatchlistClick);
-      this.#filmInfoComponent.setClickAsWatchedHandler(this.#handleAsWatchedClick);
-      this.#filmInfoComponent.setClickFavoriteHandler(this.#handleFavoriteClick);
-      this.#filmInfoComponent.setClickHandler(this.#handleHidePopup);
-
-      remove(prevFilmDetailsComponent);
-      return;
-    }
-
-    render(this.#filmInfoComponent, this.#popupContainerComponent.element.firstChild);
+    this.#filmInfoComponent = new PopupFilmDetailsView(this.#movie);
 
     this.#filmInfoComponent.setClickWatchlistHandler(this.#handleWatchlistClick);
     this.#filmInfoComponent.setClickAsWatchedHandler(this.#handleAsWatchedClick);
     this.#filmInfoComponent.setClickFavoriteHandler(this.#handleFavoriteClick);
     this.#filmInfoComponent.setClickHandler(this.#handleHidePopup);
+
+    render(this.#filmInfoComponent, this.#popupContainerComponent.element.firstChild);
   };
 
   #renderComments = () => {
-    if (this.#mode !== Mode.DEFAULT) {
-      const prevCommentsComponent = this.#commentsContainerComponent;
-      this.#commentsContainerComponent = new PopupCommentsView(this.#movie, this.#comments);
+    this.#commentsContainerComponent = new PopupCommentsView(this.#movie, this.#comments);
 
-      replace(this.#commentsContainerComponent, prevCommentsComponent);
-
-      this.#commentsContainerComponent.setAddCommentHandler(this.#handleAddComment);
-      this.#commentsContainerComponent.setDeleteCommentHandler(this.#handleDeleteComment);
-
-      remove(prevCommentsComponent);
-      return;
-    }
+    render(this.#commentsContainerComponent, this.#popupContainerComponent.element.firstChild);
 
     this.#commentsContainerComponent.setAddCommentHandler(this.#handleAddComment);
     this.#commentsContainerComponent.setDeleteCommentHandler(this.#handleDeleteComment);
@@ -157,22 +145,62 @@ export default class MoviePresenter {
   };
 
   #handleWatchlistClick = () => {
+    if (this.#popupContainerComponent) {
+      this.#position = this.#popupContainerComponent.element.scrollTop;
+    }
+
     this.#changeData(UpdateType.MINOR, { ...this.#movie, userDetails: { ...this.#movie.userDetails, watchlist: !this.#movie.userDetails.watchlist } });
   };
 
   #handleAsWatchedClick = () => {
+    if (this.#popupContainerComponent) {
+      this.#position = this.#popupContainerComponent.element.scrollTop;
+    }
+
     this.#changeData(UpdateType.MINOR, { ...this.#movie, userDetails: { ...this.#movie.userDetails, alreadyWatched: !this.#movie.userDetails.alreadyWatched } });
   };
 
   #handleFavoriteClick = () => {
+    if (this.#popupContainerComponent) {
+      this.#position = this.#popupContainerComponent.element.scrollTop;
+    }
+
     this.#changeData(UpdateType.MINOR, { ...this.#movie, userDetails: { ...this.#movie.userDetails, favorite: !this.#movie.userDetails.favorite } });
   };
 
-  #handleAddComment = () => {
+  #handleAddComment = (id, author, comment, date, emotion) => {
+    this.#position = this.#popupContainerComponent.element.scrollTop;
 
+    const newComment = {
+      id: id,
+      author: author,
+      comment: comment,
+      date: date,
+      emotion: emotion,
+    };
+
+    this.#movie.comments.push(newComment.id);
+
+    this.#commentsModel.addComment(UpdateType.PATCH, newComment);
+    this.#changeData(UpdateType.MINOR, this.#movie);
   };
 
-  #handleDeleteComment = () => {
+  #handleDeleteComment = (id) => {
+    this.#position = this.#popupContainerComponent.element.scrollTop;
 
+    this.#commentsModel.comments.forEach((comment) => {
+      if (`${comment.id}` === id) {
+        const index = this.#movie.comments.findIndex((commentItem) => `${commentItem}` === id);
+
+        if (index >= 0) {
+          this.#movie.comments.splice(index, 1);
+          this.#commentsModel.deleteComment(UpdateType.PATCH, comment);
+          this.#changeData(UpdateType.MINOR, this.#movie);
+        }
+      }
+    });
+
+    // this.#changeMode();
+    this.#mode = Mode.OPEN;
   };
 }

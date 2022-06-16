@@ -35,7 +35,8 @@ export default class BoardPresenter {
   #showMoreButtonComponent = new ShowMoreButtonView();
 
   #moviePresenter = new Map();
-  #extraMoviePresenter = new Map();
+  #topRatedMoviePresenter = new Map();
+  #mostCommentedMoviePresenter = new Map();
 
   #renderedMovieCount = MOVIE_COUNT_PER_STEP;
 
@@ -100,15 +101,11 @@ export default class BoardPresenter {
     remove(prevTitleComponent);
   };
 
-  #renderMovie = (movie, container, isExtra = false) => {
-    const moviePresenter = new MoviePresenter(container, this.comments, this.#handleViewAction, this.#handleModeChange);
+  #renderMovie = (movie, container, presenter) => {
+    const moviePresenter = new MoviePresenter(container, this.comments, this.#handleViewAction, this.#handleModeChange, this.#commentsModel);
     moviePresenter.init(movie);
 
-    if (isExtra) {
-      this.#extraMoviePresenter.set(movie.id, moviePresenter);
-    } else {
-      this.#moviePresenter.set(movie.id, moviePresenter);
-    }
+    presenter.set(movie.id, moviePresenter);
   };
 
   #renderMainMovieList = () => {
@@ -119,9 +116,36 @@ export default class BoardPresenter {
     render(this.#mainTitleComponent, this.#mainListComponent.element, RenderPosition.AFTERBEGIN);
     render(this.#mainListComponent, this.#boardComponent.element);
 
-    renderList(movies, this.#renderMovie, this.#mainListComponent);
+    renderList(movies, this.#renderMovie, this.#mainListComponent, this.#moviePresenter);
 
     if (movieCount > MOVIE_COUNT_PER_STEP) {
+      this.#rendershowMoreButton();
+    }
+  };
+
+  #replaceMainMovieList = (data) => {
+    const movieCount = this.movies.length;
+    const movies = this.movies.slice(0, Math.min(movieCount, this.#renderedMovieCount));
+
+    let popupMode = 'DEFAULT';
+    let position = 0;
+
+    if (data && this.#moviePresenter.get(data.id)) {
+      popupMode = this.#moviePresenter.get(data.id).mode;
+      position = this.#moviePresenter.get(data.id).position;
+      this.#moviePresenter.get(data.id).init(data);
+    }
+
+    this.#clearMovieList();
+    this.#replaceMainTitle(movies);
+    renderList(movies, this.#renderMovie, this.#mainListComponent, this.#moviePresenter);
+
+    if (popupMode !== 'DEFAULT' && this.#moviePresenter.get(data.id)) {
+      this.#moviePresenter.get(data.id).initPopup(position);
+    }
+
+
+    if (this.movies.length > this.#renderedMovieCount) {
       this.#rendershowMoreButton();
     }
   };
@@ -136,8 +160,28 @@ export default class BoardPresenter {
 
     render(this.#topRatedListComponent, this.#boardComponent.element);
     this.#renderTitle(movies, this.#topRatedListComponent, true, false);
+    renderList(movies, this.#renderMovie, this.#topRatedListComponent, this.#topRatedMoviePresenter);
+  };
 
-    renderList(movies, this.#renderMovie, this.#topRatedListComponent, true);
+  #replaceTopRatedMovieList = (data) => {
+    const movieCount = this.topRatedMovies.length;
+    const movies = this.topRatedMovies.slice(0, Math.min(movieCount, TOP_RATED_MOVIE_COUNT_PER_STEP));
+
+    if (data && this.#topRatedMoviePresenter.get(data.id)) {
+      let topRatedPopupMode = 'DEFAULT';
+      let position = 0;
+      topRatedPopupMode = this.#topRatedMoviePresenter.get(data.id).mode;
+      position = this.#topRatedMoviePresenter.get(data.id).position;
+      this.#topRatedMoviePresenter.get(data.id).init(data);
+
+      this.#topRatedMoviePresenter.forEach((presenter) => presenter.destroy());
+      this.#topRatedMoviePresenter.clear();
+      renderList(movies, this.#renderMovie, this.#topRatedListComponent, this.#topRatedMoviePresenter);
+
+      if (topRatedPopupMode !== 'DEFAULT' && this.#topRatedMoviePresenter.get(data.id)) {
+        this.#topRatedMoviePresenter.get(data.id).initPopup(position);
+      }
+    }
   };
 
   #renderMostCommentedMovieList = () => {
@@ -150,7 +194,28 @@ export default class BoardPresenter {
 
     render(this.#mostCommentedListComponent, this.#boardComponent.element);
     this.#renderTitle(movies, this.#mostCommentedListComponent, false, true);
-    renderList(movies, this.#renderMovie, this.#mostCommentedListComponent, true);
+    renderList(movies, this.#renderMovie, this.#mostCommentedListComponent, this.#mostCommentedMoviePresenter);
+  };
+
+  #replaceMostCommentedMovieList = (data) => {
+    const movieCount = this.mostCommentMovies.length;
+    const movies = this.mostCommentMovies.slice(0, Math.min(movieCount, MOST_COMMENTED_MOVIE_COUNT_PER_STEP));
+
+    if (data && this.#mostCommentedMoviePresenter.get(data.id)) {
+      let mostCommentedPopupMode = 'DEFAULT';
+      let position = 0;
+      mostCommentedPopupMode = this.#mostCommentedMoviePresenter.get(data.id).mode;
+      position = this.#mostCommentedMoviePresenter.get(data.id).position;
+      this.#mostCommentedMoviePresenter.get(data.id).init(data);
+
+      this.#mostCommentedMoviePresenter.forEach((presenter) => presenter.destroy());
+      this.#mostCommentedMoviePresenter.clear();
+      renderList(movies, this.#renderMovie, this.#mostCommentedListComponent, this.#mostCommentedMoviePresenter);
+
+      if (mostCommentedPopupMode !== 'DEFAULT' && this.#mostCommentedMoviePresenter.get(data.id)) {
+        this.#mostCommentedMoviePresenter.get(data.id).initPopup(position);
+      }
+    }
   };
 
   #rendershowMoreButton = () => {
@@ -172,6 +237,7 @@ export default class BoardPresenter {
   #clearMovieList = () => {
     this.#moviePresenter.forEach((presenter) => presenter.destroy());
     this.#moviePresenter.clear();
+
     remove(this.#showMoreButtonComponent);
   };
 
@@ -183,26 +249,17 @@ export default class BoardPresenter {
     if (updateType === UpdateType.MINOR) {
       this.#currentSortType = SortType.DEFAULT;
       this.#renderedMovieCount = MOVIE_COUNT_PER_STEP;
-      const movieCount = this.movies.length;
-      const movies = this.movies.slice(0, Math.min(movieCount, this.#renderedMovieCount));
 
-      if (data && this.#moviePresenter.get(data.id)) {
-        this.#moviePresenter.get(data.id).init(data);
-      }
 
-      if (data && this.#extraMoviePresenter.get(data.id)) {
-        this.#extraMoviePresenter.get(data.id).init(data);
-      }
-
-      this.#clearMovieList();
-      this.#replaceMainTitle(movies);
+      const documentPosition = window.pageYOffset;
       this.#replaceSort();
 
-      renderList(movies, this.#renderMovie, this.#mainListComponent);
+      this.#replaceTopRatedMovieList(data);
+      this.#replaceMostCommentedMovieList(data);
+      this.#replaceMainMovieList(data);
 
-      if (this.movies.length > this.#renderedMovieCount) {
-        this.#rendershowMoreButton();
-      }
+
+      window.scrollTo(0, documentPosition);
     }
   };
 

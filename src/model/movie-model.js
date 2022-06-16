@@ -3,7 +3,7 @@ import { generateMovie } from '../mock/movie.js';
 import { getRandomInteger } from '../utils.js';
 
 export default class MovieModel extends Observable {
-  #movies = Array.from({ length: getRandomInteger(1, 1) }, generateMovie);
+  #movies = Array.from({ length: getRandomInteger(5, 5) }, generateMovie);
 
   get movies () {
     return this.#movies;

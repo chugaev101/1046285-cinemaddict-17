@@ -1,5 +1,7 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import dayjs from 'dayjs';
+import he from 'he';
+import { nanoid } from 'nanoid';
 import { humanizeFullDate } from '../utils.js';
 
 let commentTemplates = [];
@@ -27,11 +29,11 @@ const getCommentsData = (movie, commentsData) => {
             <img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-smile">
           </span>
           <div>
-            <p class="film-details__comment-text">${comment}</p>
+            <p class="film-details__comment-text">${he.encode(comment)}</p>
             <p class="film-details__comment-info">
               <span class="film-details__comment-author">${author}</span>
               <span class="film-details__comment-day">${formattingOfDate(date)}</span>
-              <button class="film-details__comment-delete">Delete</button>
+              <button class="film-details__comment-delete" data-id="${commentItem.id}">Delete</button>
             </p>
           </div>
         </li>`
@@ -178,12 +180,18 @@ export default class PopupCommentsView extends AbstractStatefulView {
         return;
       }
 
-      this._callback.addComment();
+      const id = nanoid();
+      const author = 'You';
+      const date = dayjs().toDate();
+      const comment = this.element.querySelector('.film-details__comment-input').value;
+      const emotion = [...this.element.querySelectorAll('.film-details__emoji-item')].find((item) => item.checked);
+
+      this._callback.addComment(id, author, comment, date, emotion.value);
     }
   };
 
   #deleteCommentHandler = (evt) => {
     evt.preventDefault();
-    this._callback.deleteComment();
+    this._callback.deleteComment(evt.target.dataset.id);
   };
 }

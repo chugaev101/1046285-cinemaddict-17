@@ -24,9 +24,9 @@ const createCardTemplate = (movie) => {
           <span class="film-card__comments">${comments.length} comments</span>
         </a>
         <div class="film-card__controls">
-          <button class="film-card__controls-item film-card__controls-item--add-to-watchlist ${toggleFilmControls(watchlist)}" data-type="watchlist" type="button">Add to watchlist</button>
-          <button class="film-card__controls-item film-card__controls-item--mark-as-watched ${toggleFilmControls(alreadyWatched)}" data-type="watched" type="button">Mark as watched</button>
-          <button class="film-card__controls-item film-card__controls-item--favorite ${toggleFilmControls(favorite)}" data-type="favorite" type="button">Mark as favorite</button>
+          <button class="film-card__controls-item film-card__controls-item--add-to-watchlist ${toggleFilmControls(watchlist)}" type="button">Add to watchlist</button>
+          <button class="film-card__controls-item film-card__controls-item--mark-as-watched ${toggleFilmControls(alreadyWatched)}" type="button">Mark as watched</button>
+          <button class="film-card__controls-item film-card__controls-item--favorite ${toggleFilmControls(favorite)}" type="button">Mark as favorite</button>
         </div>
       </article>`
   );

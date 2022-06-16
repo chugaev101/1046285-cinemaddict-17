@@ -14,7 +14,7 @@ const sortMovieByCommentsCount = (movieA, movieB) => movieA.comments.length > mo
 
 const sortCommentsByDate = (commentA, commentB) => dayjs(commentA.date).diff(dayjs(commentB.date));
 
-const renderList = (items, render, container, isExtra = false) => items.forEach((item) => render(item, container, isExtra));
+const renderList = (items, render, container, presenter) => items.forEach((item) => render(item, container, presenter));
 
 const filterMovies = {
   [FilterType.ALL]: (movies) => movies,

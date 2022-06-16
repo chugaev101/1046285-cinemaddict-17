@@ -3,7 +3,7 @@ import { generateComment } from '../mock/comment.js';
 import { getRandomInteger } from '../utils.js';
 
 export default class CommentsModel extends Observable {
-  #comments = Array.from({ length: getRandomInteger(1, 16) }, generateComment);
+  #comments = Array.from({ length: getRandomInteger(16, 16) }, generateComment);
 
 
   get comments() {
@@ -23,7 +23,7 @@ export default class CommentsModel extends Observable {
     const index = this.#comments.findIndex((comment) => comment.id === update.id);
 
     if (index === -1) {
-      throw new Error('Can\'t delete unexisting task');
+      throw new Error('Can\'t delete unexisting comment');
     }
 
     this.#comments = [
