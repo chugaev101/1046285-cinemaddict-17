@@ -16,7 +16,7 @@ const generateDate = () => {
 };
 
 export const generateComment = () => ({
-  'id': getRandomInteger(1, 5),
+  'id': getRandomInteger(1, 15),
   'author': getNames()[getRandomInteger(0, getNames().length - 1)],
   'comment': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget.',
   'date': generateDate(),

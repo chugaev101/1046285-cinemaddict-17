@@ -71,9 +71,9 @@ const createDetailsTemplate = (movie) => {
       </div>
       
       <section class="film-details__controls">
-        <button type="button" class="film-details__control-button film-details__control-button--watchlist ${toggleFilmControls(watchlist)}" id="watchlist" name="watchlist">Add to watchlist</button>
-        <button type="button" class="film-details__control-button film-details__control-button--watched ${toggleFilmControls(alreadyWatched)}" id="watched" name="watched">Already watched</button>
-        <button type="button" class="film-details__control-button film-details__control-button--favorite ${toggleFilmControls(favorite)}" id="favorite" name="favorite">Add to favorites</button>
+        <button type="button" class="film-details__control-button film-details__control-button--watchlist ${toggleFilmControls(watchlist)}" data-type="watchlist" name="watchlist">Add to watchlist</button>
+        <button type="button" class="film-details__control-button film-details__control-button--watched ${toggleFilmControls(alreadyWatched)}" data-type="watched" name="watched">Already watched</button>
+        <button type="button" class="film-details__control-button film-details__control-button--favorite ${toggleFilmControls(favorite)}" data-type="favorite" name="favorite">Add to favorites</button>
       </section>
     </div>`
   );

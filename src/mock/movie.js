@@ -18,8 +18,8 @@ const getMovies = () => ({
 const getCommentsIds = () => {
   const ids = new Set();
 
-  for (let i = 0; i <= getRandomInteger(1, 5); i++) {
-    ids.add(getRandomInteger(1, 5));
+  for (let i = 0; i <= getRandomInteger(1, 15); i++) {
+    ids.add(getRandomInteger(1, 15));
   }
 
   return ids;
