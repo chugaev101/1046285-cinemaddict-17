@@ -29,12 +29,13 @@ export default class MoviePresenter {
 
   #commentsModel = null;
 
-  constructor(movieListContainer, comments, changeData, changeMode, commentsModel) {
+  constructor(movieListContainer, changeData, changeMode, commentsModel) {
     this.#movieListContainer = movieListContainer;
-    this.#comments = comments.sort(sortCommentsByDate);
     this.#changeData = changeData;
     this.#changeMode = changeMode;
     this.#commentsModel = commentsModel;
+
+    this.#commentsModel.addObserver(this.#handleModelEvent);
   }
 
   init = (movie) => {
@@ -76,46 +77,66 @@ export default class MoviePresenter {
 
   resetView = () => {
     if (this.#mode !== Mode.DEFAULT) {
-      this.#handleHidePopup();
+      this.#hidePopup();
     }
   };
 
   initPopup = (position) => {
     this.#renderPopup(position);
-    this.#mode = Mode.OPEN;
   };
 
   #renderPopup = (position = 0) => {
+    this.#changeMode();
     this.#popupContainerComponent = new PopupContainerView();
-
     render(this.#popupContainerComponent, document.body);
-
-    this.#renderFilmDetails(this.#movie);
-    this.#renderComments(this.#movie, this.#comments);
+    this.#renderFilmDetails();
 
     document.addEventListener('keydown', this.#escDownHandler);
-
     document.body.classList.add('hide-overflow');
 
     this.#popupContainerComponent.element.scrollTop = position;
 
-    this.#changeMode();
     this.#mode = Mode.OPEN;
+    this.#commentsModel.init(this.#movie);
+  };
+
+  #hidePopup = () => {
+    remove(this.#commentsContainerComponent);
+    remove(this.#filmInfoComponent);
+    remove(this.#popupContainerComponent);
+
+    document.body.classList.remove('hide-overflow');
+
+    this.#filmInfoComponent.element.querySelector('.film-details__close-btn').removeEventListener('click', this.#hidePopup);
+
+    document.removeEventListener('keydown', this.#escDownHandler);
   };
 
   #renderFilmDetails = () => {
     this.#filmInfoComponent = new PopupFilmDetailsView(this.#movie);
 
+    render(this.#filmInfoComponent, this.#popupContainerComponent.element.firstChild);
     this.#filmInfoComponent.setClickWatchlistHandler(this.#handleWatchlistClick);
     this.#filmInfoComponent.setClickAsWatchedHandler(this.#handleAsWatchedClick);
     this.#filmInfoComponent.setClickFavoriteHandler(this.#handleFavoriteClick);
-    this.#filmInfoComponent.setClickHandler(this.#handleHidePopup);
-
-    render(this.#filmInfoComponent, this.#popupContainerComponent.element.firstChild);
+    this.#filmInfoComponent.setClickHandler(this.#closeButtonHandler);
   };
 
-  #renderComments = () => {
-    this.#commentsContainerComponent = new PopupCommentsView(this.#movie, this.#comments);
+  #replaceFilmDetails = () => {
+    const prevfilmInfoComponent = this.#filmInfoComponent;
+    this.#filmInfoComponent = new PopupFilmDetailsView(this.#movie);
+    replace(this.#filmInfoComponent, prevfilmInfoComponent);
+
+    this.#filmInfoComponent.setClickWatchlistHandler(this.#handleWatchlistClick);
+    this.#filmInfoComponent.setClickAsWatchedHandler(this.#handleAsWatchedClick);
+    this.#filmInfoComponent.setClickFavoriteHandler(this.#handleFavoriteClick);
+    this.#filmInfoComponent.setClickHandler(this.#hidePopup);
+
+    remove(prevfilmInfoComponent);
+  };
+
+  #renderComments = (comments) => {
+    this.#commentsContainerComponent = new PopupCommentsView(this.#movie, comments);
 
     render(this.#commentsContainerComponent, this.#popupContainerComponent.element.firstChild);
 
@@ -123,24 +144,23 @@ export default class MoviePresenter {
     this.#commentsContainerComponent.setDeleteCommentHandler(this.#handleDeleteComment);
   };
 
-  #handleHidePopup = () => {
-    remove(this.#popupContainerComponent);
-    remove(this.#filmInfoComponent);
-    remove(this.#commentsContainerComponent);
+  #handleModelEvent = (updateType) => {
+    if (updateType === UpdateType.INIT_COMMENTS) {
+      this.#comments = this.#commentsModel.comments.sort(sortCommentsByDate);
+      this.#renderComments(this.#comments);
+    }
+  };
 
-    document.body.classList.remove('hide-overflow');
-
-    this.#filmInfoComponent.element.querySelector('.film-details__close-btn').removeEventListener('click', this.#handleHidePopup);
-
-    document.removeEventListener('keydown', this.#escDownHandler);
-
+  #closeButtonHandler = () => {
+    this.#hidePopup();
     this.#mode = Mode.DEFAULT;
   };
 
   #escDownHandler = (evt) => {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
-      this.#handleHidePopup();
+      this.#hidePopup();
+      this.#mode = Mode.DEFAULT;
     }
   };
 
@@ -149,7 +169,10 @@ export default class MoviePresenter {
       this.#position = this.#popupContainerComponent.element.scrollTop;
     }
 
-    this.#changeData(UpdateType.MINOR, { ...this.#movie, userDetails: { ...this.#movie.userDetails, watchlist: !this.#movie.userDetails.watchlist } });
+    this.#changeData(UpdateType.PATCH, { ...this.#movie, userDetails: { ...this.#movie.userDetails, watchlist: !this.#movie.userDetails.watchlist } });
+    if (this.#mode === Mode.OPEN) {
+      this.#replaceFilmDetails();
+    }
   };
 
   #handleAsWatchedClick = () => {
@@ -157,7 +180,10 @@ export default class MoviePresenter {
       this.#position = this.#popupContainerComponent.element.scrollTop;
     }
 
-    this.#changeData(UpdateType.MINOR, { ...this.#movie, userDetails: { ...this.#movie.userDetails, alreadyWatched: !this.#movie.userDetails.alreadyWatched } });
+    this.#changeData(UpdateType.PATCH, { ...this.#movie, userDetails: { ...this.#movie.userDetails, alreadyWatched: !this.#movie.userDetails.alreadyWatched } });
+    if (this.#mode === Mode.OPEN) {
+      this.#replaceFilmDetails();
+    }
   };
 
   #handleFavoriteClick = () => {
@@ -165,7 +191,10 @@ export default class MoviePresenter {
       this.#position = this.#popupContainerComponent.element.scrollTop;
     }
 
-    this.#changeData(UpdateType.MINOR, { ...this.#movie, userDetails: { ...this.#movie.userDetails, favorite: !this.#movie.userDetails.favorite } });
+    this.#changeData(UpdateType.PATCH, { ...this.#movie, userDetails: { ...this.#movie.userDetails, favorite: !this.#movie.userDetails.favorite } });
+    if (this.#mode === Mode.OPEN) {
+      this.#replaceFilmDetails();
+    }
   };
 
   #handleAddComment = (id, author, comment, date, emotion) => {

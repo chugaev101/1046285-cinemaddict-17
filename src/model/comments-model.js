@@ -1,14 +1,29 @@
 import Observable from '../framework/observable.js';
-import { generateComment } from '../mock/comment.js';
-import { getRandomInteger } from '../utils.js';
+import { UpdateType } from '../const.js';
 
 export default class CommentsModel extends Observable {
-  #comments = Array.from({ length: getRandomInteger(16, 16) }, generateComment);
+  #moviesApiService = null;
+  #comments = [];
 
+  constructor(moviesApiService) {
+    super();
+    this.#moviesApiService = moviesApiService;
+  }
 
   get comments() {
     return this.#comments;
   }
+
+  init = async (movie) => {
+    try {
+      const comments = await this.#moviesApiService.getComments(movie.id);
+      this.#comments = comments.map(this.#adaptToClient);
+    } catch (err) {
+      this.#comments = [];
+    }
+
+    this._notify(UpdateType.INIT_COMMENTS);
+  };
 
   addComment = (updateType, update) => {
     this.#comments = [
@@ -32,5 +47,14 @@ export default class CommentsModel extends Observable {
     ];
 
     this._notify(updateType);
+  };
+
+  #adaptToClient = (comment) => {
+    const adaptedComment = {
+      ...comment,
+      date: comment.date !== null ? new Date(comment.date) : comment.date,
+    };
+
+    return adaptedComment;
   };
 }
