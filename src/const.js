@@ -33,6 +33,8 @@ const RequestSettings = {
 const Method = {
   GET: 'GET',
   PUT: 'PUT',
+  POST: 'POST',
+  DELETE: 'DELETE',
 };
 
 export { SortType, FilterType, UpdateType, UserAction, RequestSettings, Method };

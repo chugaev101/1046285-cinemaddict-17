@@ -7,7 +7,7 @@ export default class MoviesApiService extends ApiService {
       .then(ApiService.parseResponse);
   }
 
-  getComments (id) {
+  getComments(id) {
     return this._load({ url: `comments/${id}` })
       .then(ApiService.parseResponse);
   }
@@ -17,12 +17,34 @@ export default class MoviesApiService extends ApiService {
       url: `movies/${movie.id}`,
       method: Method.PUT,
       body: JSON.stringify(this.#adaptToServer(movie)),
-      headers: new Headers({ 'Content-type': 'aplication/json' }),
+      headers: new Headers({'Content-Type': 'application/json'}),
     });
 
     const parseResponse = await ApiService.parseResponse(response);
 
     return parseResponse;
+  };
+
+  addComment = async (comment, movie) => {
+    const response = await this._load({
+      url: `comments/${movie.id}`,
+      method: Method.POST,
+      body: JSON.stringify(comment),
+      headers: new Headers({'Content-Type': 'application/json'}),
+    });
+
+    const parsedResponse = await ApiService.parseResponse(response);
+
+    return parsedResponse.comments;
+  };
+
+  deleteComment = async (comment) => {
+    const response = await this._load({
+      url: `comments/${comment.id}`,
+      method: Method.DELETE,
+    });
+
+    return response;
   };
 
   #adaptToServer = (movie) => {
@@ -46,12 +68,13 @@ export default class MoviesApiService extends ApiService {
       }
     };
 
-    delete adaptedMovie.filmInfo.alternativeTitle;
-    delete adaptedMovie.filmInfo.totalRating;
-    delete adaptedMovie.filmInfo.ageRating;
-    delete adaptedMovie.userDetails.alreadyWatched;
-    delete adaptedMovie.userDetails.watchingDate;
-    delete adaptedMovie.filmInfo.release.releaseCountry;
+
+    delete adaptedMovie['film_info'].alternativeTitle;
+    delete adaptedMovie['film_info'].totalRating;
+    delete adaptedMovie['film_info'].ageRating;
+    delete adaptedMovie['user_details'].alreadyWatched;
+    delete adaptedMovie['user_details'].watchingDate;
+    delete adaptedMovie['film_info'].release.releaseCountry;
     delete adaptedMovie.filmInfo;
     delete adaptedMovie.userDetails;
 

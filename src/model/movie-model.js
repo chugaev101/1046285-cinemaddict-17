@@ -25,20 +25,26 @@ export default class MovieModel extends Observable {
     this._notify(UpdateType.INIT);
   };
 
-  updateMovie = (updateType, update) => {
+  updateMovie = async (updateType, update) => {
     const index = this.#movies.findIndex((movie) => movie.id === update.id);
 
     if (index === -1) {
-      throw new Error('Can\'t update unexisting task');
+      throw new Error('Can\'t update unexisting movie');
     }
 
-    this.#movies = [
-      ...this.#movies.slice(0, index),
-      update,
-      ...this.#movies.slice(index + 1),
-    ];
 
-    this._notify(updateType, update);
+    try {
+      const response = await this.#moviesApiService.updateMovie(update);
+      const updatedMovie = this.#adaptToClient(response);
+      this.#movies = [
+        ...this.#movies.slice(0, index),
+        updatedMovie,
+        ...this.#movies.slice(index + 1),
+      ];
+      this._notify(updateType, updatedMovie);
+    } catch (err) {
+      throw new Error('Can\'t update movie');
+    }
   };
 
   #adaptToClient = (movie) => {
