@@ -1,7 +1,6 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import dayjs from 'dayjs';
 import he from 'he';
-import { nanoid } from 'nanoid';
 import { humanizeFullDate } from '../utils.js';
 
 let commentTemplates = [];
@@ -180,13 +179,10 @@ export default class PopupCommentsView extends AbstractStatefulView {
         return;
       }
 
-      const id = nanoid();
-      const author = 'You';
-      const date = dayjs().toDate();
       const comment = this.element.querySelector('.film-details__comment-input').value;
       const emotion = [...this.element.querySelectorAll('.film-details__emoji-item')].find((item) => item.checked);
 
-      this._callback.addComment(id, author, comment, date, emotion.value);
+      this._callback.addComment(comment, emotion.value);
     }
   };
 

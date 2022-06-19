@@ -17,7 +17,7 @@ const createCardTemplate = (movie) => {
           <p class="film-card__info">
             <span class="film-card__year">${humanizeShortDate(date)}</span>
             <span class="film-card__duration">${formatMinutesToRuntime(runtime)}</span>
-            <span class="film-card__genre">${genre}</span>
+            <span class="film-card__genre">${genre.join(', ')}</span>
           </p>
           <img src="${poster}" alt="${title}" class="film-card__poster">
           <p class="film-card__description">${description}</p>
@@ -58,7 +58,6 @@ export default class FilmCardView extends AbstractView {
     if (evt.target.parentElement.classList.contains('film-card__controls')) {
       return;
     }
-
     this._callback.click();
   };
 
