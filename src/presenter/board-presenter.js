@@ -298,6 +298,15 @@ export default class BoardPresenter {
         }
       }
 
+      if (this.#mostCommentedMoviePresenter.get(update.id)) {
+        this.#mostCommentedMoviePresenter.get(update.id).setFilmDetailsLoading();
+        try {
+          await this.#movieModel.updateMovie(updateType, update);
+        } catch (err) {
+          this.#mostCommentedMoviePresenter.get(update.id).setAborting();
+        }
+      }
+
       if (this.#topRatedMoviePresenter.get(update.id)) {
         this.#topRatedMoviePresenter.get(update.id).setFilmDetailsLoading();
 
@@ -305,15 +314,6 @@ export default class BoardPresenter {
           await this.#movieModel.updateMovie(updateType, update);
         } catch (err) {
           this.#topRatedMoviePresenter.get(update.id).setAborting();
-        }
-      }
-
-      if (this.#mostCommentedMoviePresenter.get(update.id)) {
-        this.#mostCommentedMoviePresenter.get(update.id).setFilmDetailsLoading();
-        try {
-          await this.#movieModel.updateMovie(updateType, update);
-        } catch (err) {
-          this.#mostCommentedMoviePresenter.get(update.id).setAborting();
         }
       }
     } else if (actionType === UserAction.DELETE_COMMENT) {
