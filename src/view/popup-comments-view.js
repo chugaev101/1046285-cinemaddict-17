@@ -6,42 +6,45 @@ import { humanizeFullDate } from '../utils.js';
 let commentTemplates = [];
 
 const settings = new Map([
-  [0,()=>'Today'],
-  [1,()=>'Yesterday'],
-  [2,()=>'2 days ago'],
+  [0, () => 'Today'],
+  [1, () => 'Yesterday'],
+  [2, () => '2 days ago'],
 ]);
 
-const daysAgo = (date)=>dayjs().diff(date, 'day');
+const daysAgo = (date) => dayjs().diff(date, 'day');
 
-const getFormatter = (count)=> settings.get(count) || humanizeFullDate;
+const getFormatter = (count) => settings.get(count) || humanizeFullDate;
 
 const formattingOfDate = (date) => (getFormatter(daysAgo(date)))(date);
 
-const getCommentsData = (movie, commentsData) => {
+const deletingIdVerification = (comment, deleteId) => comment.id === deleteId;
+
+const getCommentsData = (movie, commentsData, deleteId) => {
   for (const commentItem of commentsData) {
     const { author, comment, date, emotion } = commentItem;
+    const { isCommentDeleting } = movie;
+    const isDeleting = isCommentDeleting ? deletingIdVerification(commentItem, deleteId) : false;
 
-    if (movie.comments.includes(commentItem.id)) {
-      commentTemplates.push(
-        `<li class="film-details__comment">
-          <span class="film-details__comment-emoji">
-            <img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-smile">
-          </span>
-          <div>
-            <p class="film-details__comment-text">${he.encode(comment)}</p>
-            <p class="film-details__comment-info">
-              <span class="film-details__comment-author">${author}</span>
-              <span class="film-details__comment-day">${formattingOfDate(date)}</span>
-              <button class="film-details__comment-delete" data-id="${commentItem.id}">Delete</button>
-            </p>
-          </div>
-        </li>`
-      );
-    }
+    commentTemplates.push(
+      `<li class="film-details__comment">
+        <span class="film-details__comment-emoji">
+          <img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-smile">
+        </span>
+        <div>
+          <p class="film-details__comment-text">${he.encode(comment)}</p>
+          <p class="film-details__comment-info">
+            <span class="film-details__comment-author">${author}</span>
+            <span class="film-details__comment-day">${formattingOfDate(date)}</span>
+            <button class="film-details__comment-delete" style="${isDeleting ? 'pointer-events: none;' : ''}" data-id="${commentItem.id}">${isDeleting ? 'Deleting...' : 'Delete'}</button>
+          </p>
+        </div>
+      </li>`
+    );
   }
 };
 
-const getEmoji = (emotion) => emotion? `<img src="images/emoji/${emotion}.png" width="55" height="55" alt="emoji-${emotion}">` : '';
+const getEmoji = (emotion) => emotion ? `<img src="images/emoji/${emotion}.png" width="55" height="55" alt="emoji-${emotion}">` : '';
+const restoreEmojiState = (currentId, emojiCheckedId) => currentId === emojiCheckedId ? 'checked' : '';
 
 const validateCommentInput = (element) => {
   const emotionNode = element.querySelector('.film-details__add-emoji-label');
@@ -67,10 +70,10 @@ const validateCommentInput = (element) => {
   }
 };
 
-const createContainerTemplate = (movie, comments) => {
+const createContainerTemplate = (movie, comments, deleteId, emojiCheckedId) => {
   commentTemplates = [];
-  getCommentsData(movie, comments);
-  const {emotion, comment} = movie;
+  getCommentsData(movie, comments, deleteId);
+  const { emotion, comment, isCommentAdding } = movie;
 
   return (`
   <div class="film-details__bottom-container">
@@ -78,7 +81,7 @@ const createContainerTemplate = (movie, comments) => {
       <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${commentTemplates.length}</span></h3>
       <ul class="film-details__comments-list">${commentTemplates.join('')}</ul>
 
-      <div class="film-details__new-comment">
+      <div class="film-details__new-comment" style="${isCommentAdding ? 'pointer-events: none; opacity: 0.3;' : ''}">
         <div class="film-details__add-emoji-label">${getEmoji(emotion)}</div>
 
         <label class="film-details__comment-label">
@@ -86,22 +89,22 @@ const createContainerTemplate = (movie, comments) => {
         </label>
 
         <div class="film-details__emoji-list">
-          <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-smile" value="smile">
+          <input class="film-details__emoji-item visually-hidden" ${restoreEmojiState('emoji-smile', emojiCheckedId)} name="comment-emoji" type="radio" id="emoji-smile" value="smile">
           <label class="film-details__emoji-label" for="emoji-smile">
             <img src="./images/emoji/smile.png" width="30" height="30" alt="emoji">
           </label>
 
-          <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-sleeping" value="sleeping">
+          <input class="film-details__emoji-item visually-hidden" ${restoreEmojiState('emoji-sleeping', emojiCheckedId)} name="comment-emoji" type="radio" id="emoji-sleeping" value="sleeping">
           <label class="film-details__emoji-label" for="emoji-sleeping">
             <img src="./images/emoji/sleeping.png" width="30" height="30" alt="emoji">
           </label>
 
-          <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-puke" value="puke">
+          <input class="film-details__emoji-item visually-hidden" ${restoreEmojiState('emoji-puke', emojiCheckedId)} name="comment-emoji" type="radio" id="emoji-puke" value="puke">
           <label class="film-details__emoji-label" for="emoji-puke">
             <img src="./images/emoji/puke.png" width="30" height="30" alt="emoji">
           </label>
 
-          <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-angry" value="angry">
+          <input class="film-details__emoji-item visually-hidden" ${restoreEmojiState('emoji-angry', emojiCheckedId)} name="comment-emoji" type="radio" id="emoji-angry" value="angry">
           <label class="film-details__emoji-label" for="emoji-angry">
             <img src="./images/emoji/angry.png" width="30" height="30" alt="emoji">
           </label>
@@ -114,17 +117,18 @@ const createContainerTemplate = (movie, comments) => {
 
 export default class PopupCommentsView extends AbstractStatefulView {
   #comments = null;
+  #commentDeletingId = null;
+  #emotionCheckedId = null;
 
   constructor(movie, comments) {
     super();
     this._state = PopupCommentsView.parseMovieToState(movie);
     this.#comments = comments;
-
     this.#setInnerHandlers();
   }
 
   get template() {
-    return createContainerTemplate(this._state, this.#comments);
+    return createContainerTemplate(this._state, this.#comments, this.#commentDeletingId, this.#emotionCheckedId);
   }
 
   #setInnerHandlers = () => {
@@ -155,18 +159,31 @@ export default class PopupCommentsView extends AbstractStatefulView {
     ...movie,
     comment: '',
     emotion: '',
+    isCommentAdding: false,
+    isCommentDeleting: false,
   });
+
+  reset = (movie, comments) => {
+    this.#comments = comments;
+    this.#commentDeletingId = null;
+    this.#emotionCheckedId = null;
+    this.updateElement(
+      PopupCommentsView.parseMovieToState(movie)
+    );
+  };
+
+  restoreFocus = () => this.element.querySelector('.film-details__comment-input').focus();
 
   _restoreHandlers = () => {
     this.#setInnerHandlers();
   };
 
-  setAddCommentHandler = (callback) =>  {
+  setAddCommentHandler = (callback) => {
     this._callback.addComment = callback;
     this.element.addEventListener('keydown', this.#addCommentHandler);
   };
 
-  setDeleteCommentHandler = (callback) =>  {
+  setDeleteCommentHandler = (callback) => {
     this._callback.deleteComment = callback;
     this.element.querySelectorAll('.film-details__comment-delete').forEach((button) => button.addEventListener('click', this.#deleteCommentHandler));
   };
@@ -181,6 +198,7 @@ export default class PopupCommentsView extends AbstractStatefulView {
 
       const comment = this.element.querySelector('.film-details__comment-input').value;
       const emotion = [...this.element.querySelectorAll('.film-details__emoji-item')].find((item) => item.checked);
+      this.#emotionCheckedId = emotion.id;
 
       this._callback.addComment(comment, emotion.value);
     }
@@ -188,6 +206,7 @@ export default class PopupCommentsView extends AbstractStatefulView {
 
   #deleteCommentHandler = (evt) => {
     evt.preventDefault();
+    this.#commentDeletingId = evt.target.dataset.id;
     this._callback.deleteComment(evt.target.dataset.id);
   };
 }

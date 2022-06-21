@@ -9,7 +9,8 @@ import LoadingListView from '../view/loading-list-view.js';
 import LoadingTotalCountView from '../view/loading-total-count.js';
 import FilmStatisticsView from '../view/films-statistics-view.js';
 import MoviePresenter from './movie-presenter.js';
-import { SortType, UpdateType } from '../const.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
+import { SortType, UpdateType, FilterType, UserAction } from '../const.js';
 
 const MOVIE_COUNT_PER_STEP = 5;
 const TOP_RATED_MOVIE_COUNT_PER_STEP = 2;
@@ -18,6 +19,11 @@ const MOST_COMMENTED_MOVIE_COUNT_PER_STEP = 2;
 const comparersSort = {
   [SortType.DATE]: sortMovieByDate,
   [SortType.RATING]: sortMovieByRating
+};
+
+const TimeLimit = {
+  LOWER_LIMT: 350,
+  UPPER_LIMT: 350,
 };
 
 export default class BoardPresenter {
@@ -39,6 +45,7 @@ export default class BoardPresenter {
   #currentSortType = SortType.DEFAULT;
 
   #showMoreButtonComponent = new ShowMoreButtonView();
+  #uiBlocker = new UiBlocker(TimeLimit.LOWER_LIMT, TimeLimit.UPPER_LIMT);
 
   #moviePresenter = new Map();
   #topRatedMoviePresenter = new Map();
@@ -177,7 +184,9 @@ export default class BoardPresenter {
     const movieCount = this.topRatedMovies.length;
     const movies = this.topRatedMovies.slice(0, Math.min(movieCount, TOP_RATED_MOVIE_COUNT_PER_STEP));
 
-    if (movies.length < 2) {
+    const sumrRating = movies.reduce((previousValue, currentValue) => previousValue.filmInfo.totalRating + currentValue.filmInfo.totalRating);
+
+    if (movies.length < 2 || sumrRating < 0) {
       return;
     }
 
@@ -210,6 +219,12 @@ export default class BoardPresenter {
   #renderMostCommentedMovieList = () => {
     const movieCount = this.mostCommentMovies.length;
     const movies = this.mostCommentMovies.slice(0, Math.min(movieCount, MOST_COMMENTED_MOVIE_COUNT_PER_STEP));
+
+    const sumrCommentsCount = movies.reduce((previousValue, currentValue) => previousValue.comments.length + currentValue.comments.length);
+
+    if (movies.length < 2 || sumrCommentsCount < 0) {
+      return;
+    }
 
     if (movies.length < 2) {
       return;
@@ -270,13 +285,109 @@ export default class BoardPresenter {
     remove(this.#showMoreButtonComponent);
   };
 
-  #handleViewAction = (updateType, update) => {
-    this.#movieModel.updateMovie(updateType, update);
+  #handleViewAction = async (actionType, updateType, update) => {
+    this.#uiBlocker.block();
+
+    if (actionType === UserAction.UPDATE_MOVIE) {
+      if (this.#moviePresenter.get(update.id)) {
+        this.#moviePresenter.get(update.id).setFilmDetailsLoading();
+        try {
+          await this.#movieModel.updateMovie(updateType, update);
+        } catch (err) {
+          this.#moviePresenter.get(update.id).setAborting();
+        }
+      }
+
+      if (this.#topRatedMoviePresenter.get(update.id)) {
+        this.#topRatedMoviePresenter.get(update.id).setFilmDetailsLoading();
+
+        try {
+          await this.#movieModel.updateMovie(updateType, update);
+        } catch (err) {
+          this.#topRatedMoviePresenter.get(update.id).setAborting();
+        }
+      }
+
+      if (this.#mostCommentedMoviePresenter.get(update.id)) {
+        this.#mostCommentedMoviePresenter.get(update.id).setFilmDetailsLoading();
+        try {
+          await this.#movieModel.updateMovie(updateType, update);
+        } catch (err) {
+          this.#mostCommentedMoviePresenter.get(update.id).setAborting();
+        }
+      }
+    } else if (actionType === UserAction.DELETE_COMMENT) {
+      if (this.#moviePresenter.get(update.id)) {
+        this.#moviePresenter.get(update.id).setCommentDeleting();
+        try {
+          await this.#movieModel.updateMovie(updateType, update);
+        } catch (err) {
+          this.#moviePresenter.get(update.id).setAborting();
+        }
+      }
+
+      if (this.#topRatedMoviePresenter.get(update.id)) {
+        this.#topRatedMoviePresenter.get(update.id).setCommentDeleting();
+
+        try {
+          await this.#movieModel.updateMovie(updateType, update);
+        } catch (err) {
+          this.#topRatedMoviePresenter.get(update.id).setAborting();
+        }
+      }
+
+      if (this.#mostCommentedMoviePresenter.get(update.id)) {
+        this.#mostCommentedMoviePresenter.get(update.id).setCommentDeleting();
+
+        try {
+          await this.#movieModel.updateMovie(updateType, update);
+        } catch (err) {
+          this.#mostCommentedMoviePresenter.get(update.id).setAborting();
+        }
+      }
+
+    } else if (actionType === UserAction.ADD_COMMENT) {
+      if (this.#moviePresenter.get(update.id)) {
+        this.#moviePresenter.get(update.id).setCommentAdding();
+        try {
+          await this.#movieModel.updateMovie(updateType, update);
+        } catch (err) {
+          this.#moviePresenter.get(update.id).setAborting();
+        }
+      }
+
+      if (this.#topRatedMoviePresenter.get(update.id)) {
+        this.#topRatedMoviePresenter.get(update.id).setCommentAdding();
+
+        try {
+          await this.#movieModel.updateMovie(updateType, update);
+        } catch (err) {
+          this.#topRatedMoviePresenter.get(update.id).setAborting();
+        }
+      }
+
+      if (this.#mostCommentedMoviePresenter.get(update.id)) {
+        this.#mostCommentedMoviePresenter.get(update.id).setCommentAdding();
+
+        try {
+          await this.#movieModel.updateMovie(updateType, update);
+        } catch (err) {
+          this.#mostCommentedMoviePresenter.get(update.id).setAborting();
+        }
+      }
+    }
+
+    this.#uiBlocker.unblock();
   };
 
   #handleModelEvent = (updateType, data) => {
     if (updateType === UpdateType.PATCH) {
+      const documentPosition = window.pageYOffset;
       this.#replaceSort();
+
+      if (this.#filterModel.filter !== FilterType.ALL) {
+        this.#replaceMainMovieList(data);
+      }
 
       if (this.#moviePresenter.get(data.id)) {
         this.#moviePresenter.get(data.id).init(data);
@@ -290,6 +401,7 @@ export default class BoardPresenter {
         this.#mostCommentedMoviePresenter.get(data.id).init(data);
       }
 
+      window.scrollTo(0, documentPosition);
     } else if (updateType === UpdateType.MINOR) {
       const documentPosition = window.pageYOffset;
 
