@@ -1,16 +1,23 @@
 import { render, remove, replace } from '../framework/render.js';
 import { sortCommentsByDate } from '../utils.js';
-import FilmCardView from '../view/film-card-view.js';
 
+import FilmCardView from '../view/film-card-view.js';
 import PopupContainerView from '../view/popup-container-view.js';
 import PopupFilmDetailsView from '../view/popup-film-details-view.js';
 import PopupCommentsView from '../view/popup-comments-view.js';
 
-import { UpdateType } from '../const.js';
+import { UpdateType, UserAction } from '../const.js';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
   OPEN: 'OPEN',
+};
+
+const ChangeMode = {
+  DEFAULT: 'DEFAULT',
+  LOADING: 'LOADING',
+  ADDING: 'ADDING',
+  DELETING: 'DELETING',
 };
 
 export default class MoviePresenter {
@@ -23,6 +30,7 @@ export default class MoviePresenter {
   #changeData = null;
   #changeMode = null;
   #mode = Mode.DEFAULT;
+  #ChangeMode = ChangeMode.DEFAULT;
   #position = 0;
 
   #popupContainerComponent = null;
@@ -86,6 +94,60 @@ export default class MoviePresenter {
     }
   };
 
+  setFilmDetailsLoading = () => {
+    if (this.#ChangeMode === ChangeMode.LOADING && this.#mode !== Mode.DEFAULT) {
+      this.#filmInfoComponent.updateElement({
+        isDisabled: true,
+      });
+    }
+  };
+
+  setCommentDeleting = () => {
+    if (this.#ChangeMode === ChangeMode.DELETING) {
+      this.#commentsContainerComponent.updateElement({
+        isCommentDeleting: true,
+      });
+    }
+  };
+
+  setCommentAdding = () => {
+    if (this.#ChangeMode === ChangeMode.ADDING) {
+      this.#commentsContainerComponent.updateElement({
+        isCommentAdding: true,
+      });
+    }
+  };
+
+  setAborting = () => {
+    if (this.#ChangeMode === ChangeMode.LOADING) {
+      const resetFilmDetailsState = () => {
+        this.#filmInfoComponent.updateElement({
+          isDisabled: false,
+        });
+      };
+
+      this.#filmInfoComponent.shake(resetFilmDetailsState);
+    } else if (this.#ChangeMode === ChangeMode.DELETING) {
+      const resetCommentsState = () => {
+        this.#commentsContainerComponent.updateElement({
+          isCommentDeleting: false,
+        });
+      };
+
+      this.#commentsContainerComponent.shake(resetCommentsState);
+
+    } else if (this.#ChangeMode === ChangeMode.ADDING) {
+      const resetCommentsState = () => {
+        this.#commentsContainerComponent.updateElement({
+          isCommentAdding: false,
+        });
+        this.#commentsContainerComponent.restoreFocus();
+      };
+
+      this.#commentsContainerComponent.shake(resetCommentsState);
+    }
+  };
+
   initPopup = (position) => {
     this.#renderPopup(position);
   };
@@ -141,6 +203,14 @@ export default class MoviePresenter {
   };
 
   #renderComments = (comments) => {
+    this.#commentsContainerComponent = new PopupCommentsView(this.#movie, comments);
+    render(this.#commentsContainerComponent, this.#popupContainerComponent.element.firstChild);
+
+    this.#commentsContainerComponent.setAddCommentHandler(this.#handleAddComment);
+    this.#commentsContainerComponent.setDeleteCommentHandler(this.#handleDeleteComment);
+  };
+
+  #replaceComments = (comments) => {
     const prevCommentsContainerComponent = this.#commentsContainerComponent;
     this.#commentsContainerComponent = new PopupCommentsView(this.#movie, comments);
 
@@ -168,8 +238,10 @@ export default class MoviePresenter {
       this.#renderComments(this.#comments);
     } else if (updateType === UpdateType.PATCH && this.#mode !== Mode.DEFAULT) {
       this.#comments = this.#commentsModel.comments.sort(sortCommentsByDate);
+      this.#filmInfoComponent.reset(this.#movie);
+      this.#commentsContainerComponent.reset(this.#movie, this.#comments);
       this.#replaceFilmDetails();
-      this.#renderComments(this.#comments);
+      this.#replaceComments(this.#comments);
       this.#position = this.#popupContainerComponent.element.scrollTop;
     }
   };
@@ -177,6 +249,7 @@ export default class MoviePresenter {
   #closeButtonHandler = () => {
     this.#hidePopup();
     this.#mode = Mode.DEFAULT;
+    this.#changeData(UserAction.UPDATE_MOVIE, UpdateType.MINOR, this.#movie);
   };
 
   #escDownHandler = (evt) => {
@@ -184,6 +257,7 @@ export default class MoviePresenter {
       evt.preventDefault();
       this.#hidePopup();
       this.#mode = Mode.DEFAULT;
+      this.#changeData(UserAction.UPDATE_MOVIE, UpdateType.MINOR, this.#movie);
     }
   };
 
@@ -192,7 +266,9 @@ export default class MoviePresenter {
       this.#position = this.#popupContainerComponent.element.scrollTop;
     }
 
-    this.#changeData(UpdateType.PATCH, { ...this.#movie, userDetails: { ...this.#movie.userDetails, watchlist: !this.#movie.userDetails.watchlist } });
+    this.#ChangeMode = ChangeMode.LOADING;
+
+    this.#changeData(UserAction.UPDATE_MOVIE, UpdateType.PATCH, { ...this.#movie, userDetails: { ...this.#movie.userDetails, watchlist: !this.#movie.userDetails.watchlist } });
   };
 
   #handleAsWatchedClick = () => {
@@ -200,7 +276,9 @@ export default class MoviePresenter {
       this.#position = this.#popupContainerComponent.element.scrollTop;
     }
 
-    this.#changeData(UpdateType.PATCH, { ...this.#movie, userDetails: { ...this.#movie.userDetails, alreadyWatched: !this.#movie.userDetails.alreadyWatched } });
+    this.#ChangeMode = ChangeMode.LOADING;
+
+    this.#changeData(UserAction.UPDATE_MOVIE, UpdateType.PATCH, { ...this.#movie, userDetails: { ...this.#movie.userDetails, alreadyWatched: !this.#movie.userDetails.alreadyWatched } });
   };
 
   #handleFavoriteClick = () => {
@@ -208,7 +286,9 @@ export default class MoviePresenter {
       this.#position = this.#popupContainerComponent.element.scrollTop;
     }
 
-    this.#changeData(UpdateType.PATCH, { ...this.#movie, userDetails: { ...this.#movie.userDetails, favorite: !this.#movie.userDetails.favorite } });
+    this.#ChangeMode = ChangeMode.LOADING;
+
+    this.#changeData(UserAction.UPDATE_MOVIE, UpdateType.PATCH, { ...this.#movie, userDetails: { ...this.#movie.userDetails, favorite: !this.#movie.userDetails.favorite } });
   };
 
   #handleAddComment = (comment, emotion) => {
@@ -217,16 +297,15 @@ export default class MoviePresenter {
       emotion: emotion,
     };
 
+    this.#ChangeMode = ChangeMode.ADDING;
     this.#commentsModel.addComment(UpdateType.PATCH, newComment, this.#movie);
-    this.#changeData(UpdateType.PATCH, this.#movie);
+    this.#changeData(UserAction.ADD_COMMENT, UpdateType.PATCH, this.#movie);
   };
 
   #handleDeleteComment = (id) => {
     const targetComment = this.#comments.find((comment) => comment.id === id);
-    this.#commentsModel.deleteComment(UpdateType.PATCH, targetComment,  this.#movie);
-    this.#changeData(UpdateType.PATCH, this.#movie);
-
-    // this.#changeMode();
-    // this.#mode = Mode.OPEN;
+    this.#ChangeMode = ChangeMode.DELETING;
+    this.#commentsModel.deleteComment(UpdateType.PATCH, targetComment, this.#movie);
+    this.#changeData(UserAction.DELETE_COMMENT, UpdateType.PATCH, this.#movie);
   };
 }

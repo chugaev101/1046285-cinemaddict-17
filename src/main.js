@@ -1,8 +1,7 @@
 import { RequestSettings } from './const.js';
-import { render } from './framework/render.js';
-import UserRankView from './view/user-rank-view.js';
 import BoardPresenter from './presenter/board-presenter.js';
 import FilterPresenter from './presenter/filter-presenter.js';
+import UserSettingsPresenter from './presenter/user-settings-presenter.js';
 import MoviesApiService from './services/movies-api-service.js';
 
 import MovieModel from './model/movie-model.js';
@@ -21,9 +20,9 @@ const filterModel = new FilterModel();
 
 const filterPresenter = new FilterPresenter(siteMainNode, filterModel, movieModel);
 const boardPresenter = new BoardPresenter(siteMainNode, siteFooterNode, movieModel, commentsModel, filterModel);
+const userSettingsPresenter = new UserSettingsPresenter(siteHeaderNode, movieModel);
 
-render(new UserRankView(), siteHeaderNode);
-
+movieModel.init();
 filterPresenter.init();
 boardPresenter.init();
-movieModel.init();
+userSettingsPresenter.init();
