@@ -7,7 +7,13 @@ const createDetailsTemplate = (movie) => {
   const { date, releaseCountry } = release;
   const { watchlist, alreadyWatched, favorite } = userDetails;
 
-  const toggleFilmControls = (control) => control === true ? 'film-details__control-button--active' : '';
+  let slicedDescription = description;
+
+  if (description.length > 140) {
+    slicedDescription = `${slicedDescription.slice(0, 139)}...`;
+  }
+
+  const toggleFilmControls = (control) => control ? 'film-details__control-button--active' : '';
 
   return (
     `<div class="film-details__top-container">
@@ -59,13 +65,13 @@ const createDetailsTemplate = (movie) => {
               <td class="film-details__cell">${releaseCountry}</td>
             </tr>
             <tr class="film-details__row">
-              <td class="film-details__term">Genres</td>
+              <td class="film-details__term">${genre.length > 1 ? 'Genres' : 'Genre'}</td>
               <td class="film-details__cell">${genre}</td>
             </tr>
           </table>
       
           <p class="film-details__film-description">
-          ${description}
+          ${slicedDescription}
           </p>
         </div>
       </div>

@@ -17,6 +17,7 @@ const getFormatter = (count) => settings.get(count) || humanizeFullDate;
 
 const formattingOfDate = (date) => (getFormatter(daysAgo(date)))(date);
 
+
 const deletingIdVerification = (comment, deleteId) => comment.id === deleteId;
 
 const getCommentsData = (movie, commentsData, deleteId) => {

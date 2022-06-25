@@ -2,9 +2,9 @@ import AbstractView from '../framework/view/abstract-view.js';
 
 const getRank = (movies) => {
   let rank = '';
-  if (movies.length < 10 && movies.length > 10) {
+  if (movies.length < 10 && movies.length > 0) {
     rank = 'Novice';
-  } else if (movies.length >= 10 && movies.length > 10 && movies.length <= 20) {
+  } else if (movies.length >= 10 && movies.length <= 20) {
     rank = 'Fan';
   } else if (movies.length > 20) {
     rank = 'Movie Buff';

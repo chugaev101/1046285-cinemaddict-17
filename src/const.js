@@ -19,6 +19,15 @@ const UpdateType = {
   INIT_COMMENTS: 'INIT_COMMENTS',
 };
 
+const ChangeMode = {
+  DEFAULT: 'DEFAULT',
+  LOADING: 'LOADING',
+  ADDING: 'ADDING',
+  DELETING: 'DELETING',
+  OPEN_POPUP: 'OPEN_POPUP',
+  HIDE_POPUP: 'HIDE_POPUP',
+};
+
 const UserAction = {
   UPDATE_MOVIE: 'UPDATE_MOVIE',
   ADD_COMMENT: 'ADD_COMMENT',
@@ -37,4 +46,4 @@ const Method = {
   DELETE: 'DELETE',
 };
 
-export { SortType, FilterType, UpdateType, UserAction, RequestSettings, Method };
+export { SortType, FilterType, UpdateType, UserAction, RequestSettings, Method, ChangeMode };

@@ -9,8 +9,9 @@ import LoadingListView from '../view/loading-list-view.js';
 import LoadingTotalCountView from '../view/loading-total-count.js';
 import FilmStatisticsView from '../view/films-statistics-view.js';
 import MoviePresenter from './movie-presenter.js';
+import PopupPresenter from './popup-presenter.js';
 import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
-import { SortType, UpdateType, FilterType, UserAction } from '../const.js';
+import { SortType, UpdateType, FilterType, UserAction, ChangeMode } from '../const.js';
 
 const MOVIE_COUNT_PER_STEP = 5;
 const TOP_RATED_MOVIE_COUNT_PER_STEP = 2;
@@ -50,6 +51,7 @@ export default class BoardPresenter {
   #moviePresenter = new Map();
   #topRatedMoviePresenter = new Map();
   #mostCommentedMoviePresenter = new Map();
+  #popupPresenter = null;
 
   #renderedMovieCount = MOVIE_COUNT_PER_STEP;
   #isLoading = true;
@@ -73,9 +75,9 @@ export default class BoardPresenter {
 
     if (typeof compare === 'function') {
       return filteredMovies.sort(compare);
-    } else {
-      return filteredMovies;
     }
+
+    return filteredMovies;
   }
 
   get topRatedMovies() {
@@ -110,7 +112,7 @@ export default class BoardPresenter {
   };
 
   #renderTotlaCount = () => {
-    render(new FilmStatisticsView(), this.#footer);
+    render(new FilmStatisticsView(this.#movieModel), this.#footer);
   };
 
   #renderTitle = (movies, container, isTopRated, isMostComment) => {
@@ -134,7 +136,7 @@ export default class BoardPresenter {
   };
 
   #renderMovie = (movie, container, presenter) => {
-    const moviePresenter = new MoviePresenter(container, this.#handleViewAction, this.#handleModeChange, this.#movieModel, this.#commentsModel);
+    const moviePresenter = new MoviePresenter(container, this.#handleViewAction, this.#handleModeChange);
     moviePresenter.init(movie);
     presenter.set(movie.id, moviePresenter);
   };
@@ -157,22 +159,13 @@ export default class BoardPresenter {
     const movieCount = this.movies.length;
     const movies = this.movies.slice(0, Math.min(movieCount, this.#renderedMovieCount));
 
-    let popupMode = 'DEFAULT';
-    let position = 0;
-
     if (data && this.#moviePresenter.get(data.id)) {
-      popupMode = this.#moviePresenter.get(data.id).mode;
-      position = this.#moviePresenter.get(data.id).position;
       this.#moviePresenter.get(data.id).init(data);
     }
 
     this.#clearMovieList();
     this.#replaceMainTitle(movies);
     renderList(movies, this.#renderMovie, this.#mainListComponent, this.#moviePresenter);
-
-    if (popupMode !== 'DEFAULT' && this.#moviePresenter.get(data.id)) {
-      this.#moviePresenter.get(data.id).initPopup(position);
-    }
 
 
     if (this.movies.length > this.#renderedMovieCount) {
@@ -186,7 +179,7 @@ export default class BoardPresenter {
 
     const sumrRating = movies.reduce((previousValue, currentValue) => previousValue.filmInfo.totalRating + currentValue.filmInfo.totalRating);
 
-    if (movies.length < 2 || sumrRating < 0) {
+    if (movies.length < 2 || sumrRating <= 0) {
       return;
     }
 
@@ -200,19 +193,11 @@ export default class BoardPresenter {
     const movies = this.topRatedMovies.slice(0, Math.min(movieCount, TOP_RATED_MOVIE_COUNT_PER_STEP));
 
     if (data && this.#topRatedMoviePresenter.get(data.id)) {
-      let topRatedPopupMode = 'DEFAULT';
-      let position = 0;
-      topRatedPopupMode = this.#topRatedMoviePresenter.get(data.id).mode;
-      position = this.#topRatedMoviePresenter.get(data.id).position;
       this.#topRatedMoviePresenter.get(data.id).init(data);
 
       this.#topRatedMoviePresenter.forEach((presenter) => presenter.destroy());
       this.#topRatedMoviePresenter.clear();
       renderList(movies, this.#renderMovie, this.#topRatedListComponent, this.#topRatedMoviePresenter);
-
-      if (topRatedPopupMode !== 'DEFAULT' && this.#topRatedMoviePresenter.get(data.id)) {
-        this.#topRatedMoviePresenter.get(data.id).initPopup(position);
-      }
     }
   };
 
@@ -222,11 +207,7 @@ export default class BoardPresenter {
 
     const sumrCommentsCount = movies.reduce((previousValue, currentValue) => previousValue.comments.length + currentValue.comments.length);
 
-    if (movies.length < 2 || sumrCommentsCount < 0) {
-      return;
-    }
-
-    if (movies.length < 2) {
+    if (movies.length < 2 || sumrCommentsCount <= 0) {
       return;
     }
 
@@ -240,19 +221,11 @@ export default class BoardPresenter {
     const movies = this.mostCommentMovies.slice(0, Math.min(movieCount, MOST_COMMENTED_MOVIE_COUNT_PER_STEP));
 
     if (data && this.#mostCommentedMoviePresenter.get(data.id)) {
-      let mostCommentedPopupMode = 'DEFAULT';
-      let position = 0;
-      mostCommentedPopupMode = this.#mostCommentedMoviePresenter.get(data.id).mode;
-      position = this.#mostCommentedMoviePresenter.get(data.id).position;
       this.#mostCommentedMoviePresenter.get(data.id).init(data);
 
       this.#mostCommentedMoviePresenter.forEach((presenter) => presenter.destroy());
       this.#mostCommentedMoviePresenter.clear();
       renderList(movies, this.#renderMovie, this.#mostCommentedListComponent, this.#mostCommentedMoviePresenter);
-
-      if (mostCommentedPopupMode !== 'DEFAULT' && this.#mostCommentedMoviePresenter.get(data.id)) {
-        this.#mostCommentedMoviePresenter.get(data.id).initPopup(position);
-      }
     }
   };
 
@@ -286,15 +259,42 @@ export default class BoardPresenter {
   };
 
   #handleViewAction = async (actionType, updateType, update) => {
+    let isError = false;
+
     this.#uiBlocker.block();
 
     if (actionType === UserAction.UPDATE_MOVIE) {
+      if (this.#popupPresenter !== null) {
+        this.#popupPresenter.setFilmDetailsLoading();
+
+        if (!this.#moviePresenter.get(update.id) && this.#popupPresenter.movieId === update.id) {
+          const moviePresenter = new MoviePresenter(this.#mainListComponent, this.#handleViewAction, this.#handleModeChange);
+          this.#moviePresenter.set(update.id, moviePresenter);
+        }
+      }
+
+
       if (this.#moviePresenter.get(update.id)) {
-        this.#moviePresenter.get(update.id).setFilmDetailsLoading();
+        try {
+          await this.#movieModel.updateMovie(updateType, update);
+
+          if (this.#filterModel.filter && this.#filterModel.filter !== FilterType.ALL) {
+            this.#moviePresenter.get(update.id).init(update);
+            this.#replaceMainMovieList(update);
+          }
+        } catch (err) {
+          this.#moviePresenter.get(update.id).setAborting();
+          isError = true;
+        }
+      }
+
+      if (this.#topRatedMoviePresenter.get(update.id)) {
+        this.#topRatedMoviePresenter.get(update.id).setFilmDetailsLoading();
         try {
           await this.#movieModel.updateMovie(updateType, update);
         } catch (err) {
-          this.#moviePresenter.get(update.id).setAborting();
+          this.#topRatedMoviePresenter.get(update.id).setAborting();
+          isError = true;
         }
       }
 
@@ -304,77 +304,76 @@ export default class BoardPresenter {
           await this.#movieModel.updateMovie(updateType, update);
         } catch (err) {
           this.#mostCommentedMoviePresenter.get(update.id).setAborting();
-        }
-      }
-
-      if (this.#topRatedMoviePresenter.get(update.id)) {
-        this.#topRatedMoviePresenter.get(update.id).setFilmDetailsLoading();
-
-        try {
-          await this.#movieModel.updateMovie(updateType, update);
-        } catch (err) {
-          this.#topRatedMoviePresenter.get(update.id).setAborting();
+          isError = true;
         }
       }
     } else if (actionType === UserAction.DELETE_COMMENT) {
+      this.#popupPresenter.setCommentDeleting();
+
       if (this.#moviePresenter.get(update.id)) {
-        this.#moviePresenter.get(update.id).setCommentDeleting();
         try {
           await this.#movieModel.updateMovie(updateType, update);
         } catch (err) {
           this.#moviePresenter.get(update.id).setAborting();
+          isError = true;
         }
       }
 
       if (this.#topRatedMoviePresenter.get(update.id)) {
-        this.#topRatedMoviePresenter.get(update.id).setCommentDeleting();
-
         try {
           await this.#movieModel.updateMovie(updateType, update);
         } catch (err) {
           this.#topRatedMoviePresenter.get(update.id).setAborting();
+          isError = true;
         }
       }
 
       if (this.#mostCommentedMoviePresenter.get(update.id)) {
-        this.#mostCommentedMoviePresenter.get(update.id).setCommentDeleting();
-
         try {
           await this.#movieModel.updateMovie(updateType, update);
         } catch (err) {
           this.#mostCommentedMoviePresenter.get(update.id).setAborting();
+          isError = true;
         }
       }
+
+      this.#replaceMostCommentedMovieList(update);
 
     } else if (actionType === UserAction.ADD_COMMENT) {
+      this.#popupPresenter.setCommentAdding();
+
       if (this.#moviePresenter.get(update.id)) {
-        this.#moviePresenter.get(update.id).setCommentAdding();
         try {
           await this.#movieModel.updateMovie(updateType, update);
         } catch (err) {
           this.#moviePresenter.get(update.id).setAborting();
+          isError = true;
         }
       }
 
       if (this.#topRatedMoviePresenter.get(update.id)) {
-        this.#topRatedMoviePresenter.get(update.id).setCommentAdding();
-
         try {
           await this.#movieModel.updateMovie(updateType, update);
         } catch (err) {
           this.#topRatedMoviePresenter.get(update.id).setAborting();
+          isError = true;
         }
       }
 
       if (this.#mostCommentedMoviePresenter.get(update.id)) {
-        this.#mostCommentedMoviePresenter.get(update.id).setCommentAdding();
-
         try {
           await this.#movieModel.updateMovie(updateType, update);
         } catch (err) {
           this.#mostCommentedMoviePresenter.get(update.id).setAborting();
+          isError = true;
         }
       }
+
+      this.#replaceMostCommentedMovieList(update);
+    }
+
+    if (this.#popupPresenter !== null && isError) {
+      this.#popupPresenter.setAborting();
     }
 
     this.#uiBlocker.unblock();
@@ -384,10 +383,6 @@ export default class BoardPresenter {
     if (updateType === UpdateType.PATCH) {
       const documentPosition = window.pageYOffset;
       this.#replaceSort();
-
-      if (this.#filterModel.filter !== FilterType.ALL) {
-        this.#replaceMainMovieList(data);
-      }
 
       if (this.#moviePresenter.get(data.id)) {
         this.#moviePresenter.get(data.id).init(data);
@@ -424,10 +419,19 @@ export default class BoardPresenter {
     }
   };
 
-  #handleModeChange = () => {
-    this.#moviePresenter.forEach((presenter) => presenter.resetView());
-    this.#mostCommentedMoviePresenter.forEach((presenter) => presenter.resetView());
-    this.#topRatedMoviePresenter.forEach((presenter) => presenter.resetView());
+  #handleModeChange = (changeMode, movieId) => {
+    if (changeMode === ChangeMode.OPEN_POPUP) {
+      if (this.#popupPresenter !== null) {
+        this.#popupPresenter.destroy();
+        this.#popupPresenter = null;
+      }
+
+      this.#popupPresenter = new PopupPresenter(this.#movieModel, this.#commentsModel, this.#handleViewAction, this.#handleModeChange);
+      this.#popupPresenter.init(movieId);
+    } else if (changeMode === ChangeMode.HIDE_POPUP) {
+      this.#popupPresenter.destroy();
+      this.#popupPresenter = null;
+    }
   };
 
   #handleSortTypeChange = (sortType) => {
